@@ -1,51 +1,59 @@
 /**
  * theme.css
- * CSS custom properties for the entire app.
- * All colors, fonts, spacing pulled from here — never hardcoded.
+ * Master CSS variables file for OSINT Arena.
+ * Import this FIRST in main.jsx (before global.css, scanline.css).
+ *
+ * Every variable used anywhere in the codebase is defined here.
  *
  * File location: frontend/src/styles/theme.css
  */
 
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap");
+
 :root {
-  /* ── Colors ─────────────────────────────────────────────────────────────── */
+
+  /* ── Fonts ──────────────────────────────────────────────────────────────── */
+  --font-mono:   "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  --font-body:   "Sora", "Segoe UI", system-ui, sans-serif;
+
+  /* ── Core palette ───────────────────────────────────────────────────────── */
   --color-bg:           #0D0F12;
   --color-surface:      #161B22;
-  --color-surface-2:    #1C2128;
-  --color-border:       #30363D;
-  --color-border-subtle:#21262D;
+  --color-surface-2:    #1C2230;
 
-  --color-accent:       #00FF88;   /* Primary: neon green */
-  --color-accent-dim:   #00CC6A;   /* Hover state */
-  --color-accent-glow:  rgba(0, 255, 136, 0.15);
+  /* ── Accent colors ──────────────────────────────────────────────────────── */
+  --color-accent:       #00FF88;
+  --color-accent-dim:   #00E67A;
+  --color-accent-glow:  rgba(0, 255, 136, 0.08);
 
-  --color-blue:         #00BFFF;   /* Secondary: electric blue */
-  --color-blue-dim:     #0099CC;
-  --color-blue-glow:    rgba(0, 191, 255, 0.15);
+  --color-blue:         #00BFFF;
+  --color-blue-dim:     #00A8E0;
+  --color-blue-glow:    rgba(0, 191, 255, 0.08);
 
-  --color-text:         #E6EDF3;
-  --color-text-muted:   #8B949E;
-  --color-text-subtle:  #484F58;
-
-  --color-error:        #FF4D4D;
   --color-warning:      #FF9500;
-  --color-success:      #00FF88;
+  --color-error:        #FF4D4D;
 
-  /* Difficulty colors */
+  /* ── Difficulty colors ──────────────────────────────────────────────────── */
   --color-easy:         #00FF88;
   --color-medium:       #FF9500;
   --color-hard:         #FF4D4D;
 
-  /* ELO tier colors */
-  --color-tier-bronze:  #CD7F32;
-  --color-tier-silver:  #C0C0C0;
-  --color-tier-gold:    #FFD700;
-  --color-tier-diamond: #00BFFF;
-  --color-tier-elite:   #00FF88;
+  /* ── Text ───────────────────────────────────────────────────────────────── */
+  --color-text:         #E6EDF3;
+  --color-text-muted:   #8B949E;
+  --color-text-subtle:  #484F58;
 
-  /* ── Typography ─────────────────────────────────────────────────────────── */
-  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
-  --font-body:    "Inter", system-ui, sans-serif;
+  /* ── Borders ────────────────────────────────────────────────────────────── */
+  --color-border:        #30363D;
+  --color-border-subtle: #21262D;
 
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:     0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg:     0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 4px 20px rgba(0, 255, 136, 0.25);
+
+  /* ── Typography scale ───────────────────────────────────────────────────── */
   --text-xs:    0.75rem;
   --text-sm:    0.875rem;
   --text-base:  1rem;
@@ -55,39 +63,21 @@
   --text-3xl:   1.875rem;
   --text-4xl:   2.25rem;
 
-  /* ── Spacing ─────────────────────────────────────────────────────────────── */
-  --space-1:  0.25rem;
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-5:  1.25rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-
-  /* ── Borders & Radius ────────────────────────────────────────────────────── */
-  --radius-sm:  4px;
-  --radius-md:  8px;
-  --radius-lg:  12px;
-  --radius-xl:  16px;
+  /* ── Border radius ──────────────────────────────────────────────────────── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
   --radius-full: 9999px;
 
-  /* ── Shadows ──────────────────────────────────────────────────────────────── */
-  --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md:      0 4px 12px rgba(0,0,0,0.5);
-  --shadow-lg:      0 8px 24px rgba(0,0,0,0.6);
-  --shadow-accent:  0 0 20px rgba(0, 255, 136, 0.2);
-  --shadow-blue:    0 0 20px rgba(0, 191, 255, 0.2);
+  /* ── Transitions ────────────────────────────────────────────────────────── */
+  --transition-fast:   0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow:   0.4s ease;
 
-  /* ── Transitions ─────────────────────────────────────────────────────────── */
-  --transition-fast:   150ms ease;
-  --transition-base:   250ms ease;
-  --transition-slow:   400ms ease;
-
-  /* ── Layout ──────────────────────────────────────────────────────────────── */
-  --navbar-height:  60px;
-  --sidebar-width:  240px;
+  /* ── Layout ─────────────────────────────────────────────────────────────── */
+  --navbar-height:  56px;
   --content-max:    1200px;
+  --sidebar-width:  220px;
+
 }

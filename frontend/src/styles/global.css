@@ -1,61 +1,45 @@
 /**
  * global.css
- * Base resets, body styles, utility classes.
- *
+ * Base resets and global utility styles.
  * File location: frontend/src/styles/global.css
  */
 
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-bg);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
 }
 
-/* Scrollbar styling */
+h1, h2, h3, h4, h5, h6 { line-height: 1.3; color: var(--color-text); }
+a { color: inherit; text-decoration: none; }
+a:hover { color: inherit; }
+p { line-height: 1.7; }
+code, kbd, samp, pre { font-family: var(--font-mono); }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+select option { background: var(--color-surface); color: var(--color-text); }
+img, svg { display: block; max-width: 100%; }
+
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: var(--color-bg); }
 ::-webkit-scrollbar-thumb  { background: var(--color-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-subtle); }
 
-/* Selection */
-::selection {
-  background: var(--color-accent-glow);
-  color: var(--color-accent);
-}
+::selection { background: rgba(0, 255, 136, 0.2); color: var(--color-text); }
 
-/* Links */
-a {
-  color: var(--color-blue);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-a:hover { color: var(--color-blue-dim); }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
 
-/* Code */
-code, pre {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-}
-
-/* Route loading spinner centering */
+/* Route loading (Suspense fallback) */
 .route-loading {
   display: flex;
   align-items: center;
@@ -63,22 +47,18 @@ code, pre {
   min-height: 100vh;
   background: var(--color-bg);
 }
-
-/* Utility classes */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
-  border-width: 0;
+.route-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: routeSpin 0.7s linear infinite;
 }
+@keyframes routeSpin { to { transform: rotate(360deg); } }
 
-.text-accent  { color: var(--color-accent); }
-.text-blue    { color: var(--color-blue); }
-.text-muted   { color: var(--color-text-muted); }
-.text-error   { color: var(--color-error); }
-.text-mono    { font-family: var(--font-mono); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
