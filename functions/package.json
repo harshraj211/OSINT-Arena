@@ -1,23 +1,28 @@
 {
   "name": "osint-arena-functions",
-  "version": "1.0.0",
-  "description": "OSINT Arena Firebase Cloud Functions",
-  "main": "src/index.js",
-  "engines": {
-    "node": "18"
-  },
+  "description": "Firebase Cloud Functions for OSINT Arena",
   "scripts": {
-    "serve": "firebase emulators:start --only functions",
+    "lint":   "eslint .",
+    "test":   "jest --testPathPattern=src/lib/lib.test.js --forceExit",
+    "build":  "echo 'No build step — pure Node.js'",
+    "serve":  "firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "test": "node src/lib/lib.test.js"
+    "logs":   "firebase functions:log"
   },
+  "engines": {
+    "node": "20"
+  },
+  "main": "src/index.js",
   "dependencies": {
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^5.0.0",
-    "@sendgrid/mail": "^8.1.0"
+    "firebase-admin":     "^12.0.0",
+    "firebase-functions": "^4.9.0",
+    "@sendgrid/mail":     "^8.1.0"
   },
   "devDependencies": {
-    "firebase-functions-test": "^3.1.0"
-  }
+    "eslint":                       "^8.57.0",
+    "eslint-config-google":         "^0.14.0",
+    "jest":                         "^29.7.0",
+    "firebase-functions-test":      "^3.3.0"
+  },
+  "private": true
 }
