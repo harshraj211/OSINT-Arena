@@ -1,0 +1,93 @@
+/**
+ * theme.css
+ * CSS custom properties for the entire app.
+ * All colors, fonts, spacing pulled from here — never hardcoded.
+ *
+ * File location: frontend/src/styles/theme.css
+ */
+
+:root {
+  /* ── Colors ─────────────────────────────────────────────────────────────── */
+  --color-bg:           #0D0F12;
+  --color-surface:      #161B22;
+  --color-surface-2:    #1C2128;
+  --color-border:       #30363D;
+  --color-border-subtle:#21262D;
+
+  --color-accent:       #00FF88;   /* Primary: neon green */
+  --color-accent-dim:   #00CC6A;   /* Hover state */
+  --color-accent-glow:  rgba(0, 255, 136, 0.15);
+
+  --color-blue:         #00BFFF;   /* Secondary: electric blue */
+  --color-blue-dim:     #0099CC;
+  --color-blue-glow:    rgba(0, 191, 255, 0.15);
+
+  --color-text:         #E6EDF3;
+  --color-text-muted:   #8B949E;
+  --color-text-subtle:  #484F58;
+
+  --color-error:        #FF4D4D;
+  --color-warning:      #FF9500;
+  --color-success:      #00FF88;
+
+  /* Difficulty colors */
+  --color-easy:         #00FF88;
+  --color-medium:       #FF9500;
+  --color-hard:         #FF4D4D;
+
+  /* ELO tier colors */
+  --color-tier-bronze:  #CD7F32;
+  --color-tier-silver:  #C0C0C0;
+  --color-tier-gold:    #FFD700;
+  --color-tier-diamond: #00BFFF;
+  --color-tier-elite:   #00FF88;
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+  --font-body:    "Inter", system-ui, sans-serif;
+
+  --text-xs:    0.75rem;
+  --text-sm:    0.875rem;
+  --text-base:  1rem;
+  --text-lg:    1.125rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+  --text-4xl:   2.25rem;
+
+  /* ── Spacing ─────────────────────────────────────────────────────────────── */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Borders & Radius ────────────────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ──────────────────────────────────────────────────────────────── */
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:      0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg:      0 8px 24px rgba(0,0,0,0.6);
+  --shadow-accent:  0 0 20px rgba(0, 255, 136, 0.2);
+  --shadow-blue:    0 0 20px rgba(0, 191, 255, 0.2);
+
+  /* ── Transitions ─────────────────────────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
+  --navbar-height:  60px;
+  --sidebar-width:  240px;
+  --content-max:    1200px;
+}

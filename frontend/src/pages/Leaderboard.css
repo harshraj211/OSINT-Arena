@@ -1,0 +1,315 @@
+/**
+ * Leaderboard.css
+ * File location: frontend/src/pages/Leaderboard.css
+ */
+
+.lb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.lb-header { text-align: center; }
+.lb-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px;
+}
+.lb-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+/* ── My rank card ─────────────────────────────────────────────────────────── */
+.lb-my-rank {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-accent-glow);
+  border: 1px solid rgba(0,255,136,0.25);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  font-family: var(--font-mono);
+}
+.lb-my-rank-label {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.lb-my-rank-num {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.lb-my-rank-elo {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.lb-my-rank-tier {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+.lb-tabs {
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+}
+.lb-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.lb-tab:hover { color: var(--color-text); background: var(--color-surface-2); }
+.lb-tab--active {
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+}
+
+/* ── Table header ─────────────────────────────────────────────────────────── */
+.lb-table {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lb-table-header {
+  display: grid;
+  grid-template-columns: 64px 1fr 110px 100px 80px;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+}
+
+/* ── Row ──────────────────────────────────────────────────────────────────── */
+.lb-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 110px 100px 80px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+  animation: rowIn 0.2s ease both;
+}
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lb-row:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-2);
+  transform: translateX(2px);
+}
+
+/* Podium rows */
+.lb-row--rank1 {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.03);
+}
+.lb-row--rank2 {
+  border-color: rgba(192, 192, 192, 0.25);
+  background: rgba(192, 192, 192, 0.02);
+}
+.lb-row--rank3 {
+  border-color: rgba(205, 127, 50, 0.25);
+  background: rgba(205, 127, 50, 0.02);
+}
+
+/* My row */
+.lb-row--me {
+  border-color: rgba(0, 255, 136, 0.3) !important;
+  background: var(--color-accent-glow) !important;
+}
+
+/* ── Rank column ──────────────────────────────────────────────────────────── */
+.lb-col-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lb-medal { font-size: 22px; }
+.lb-rank-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-subtle);
+}
+
+/* ── User column ──────────────────────────────────────────────────────────── */
+.lb-col-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.lb-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #0D0F12;
+  flex-shrink: 0;
+}
+.lb-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lb-username {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast);
+}
+.lb-username:hover     { color: var(--color-blue); }
+.lb-username--me       { color: var(--color-accent); }
+.lb-username--me:hover { color: var(--color-accent-dim); }
+.lb-you-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: #0D0F12;
+  background: var(--color-accent);
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+.lb-pro-chip {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  letter-spacing: 0.5px;
+}
+
+/* ── Tier column ──────────────────────────────────────────────────────────── */
+.lb-tier-chip {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.3px;
+}
+
+/* ── ELO column ───────────────────────────────────────────────────────────── */
+.lb-elo-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+/* ── Solved column ────────────────────────────────────────────────────────── */
+.lb-muted {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+.lb-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lb-skeleton-row {
+  height: 58px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  animation: shimmer 1.4s ease infinite;
+}
+@keyframes shimmer {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
+}
+
+/* ── Empty ────────────────────────────────────────────────────────────────── */
+.lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--color-text-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.lb-empty-icon { font-size: 28px; opacity: 0.4; }
+
+/* ── Not ranked note ──────────────────────────────────────────────────────── */
+.lb-not-ranked {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+  font-family: var(--font-mono);
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .lb-table-header,
+  .lb-row {
+    grid-template-columns: 48px 1fr 90px;
+  }
+  /* Hide tier + solved on mobile */
+  .lb-col-tier,
+  .lb-col-solved,
+  .lb-table-header span:nth-child(3),
+  .lb-table-header span:nth-child(5) {
+    display: none;
+  }
+  .lb-tabs { gap: 2px; }
+  .lb-tab  { padding: 8px 8px; font-size: var(--text-xs); }
+}

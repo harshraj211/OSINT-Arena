@@ -1,0 +1,43 @@
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+  gap: 2px;
+  padding: 10px;
+}
+
+.heatmap-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: #ebebeb;
+}
+
+.heatmap-cell.intensity-1 {
+  background-color: #c6e48b;
+}
+
+.heatmap-cell.intensity-2 {
+  background-color: #7bc96f;
+}
+
+.heatmap-cell.intensity-3 {
+  background-color: #239a3b;
+}
+
+.heatmap-cell.intensity-4 {
+  background-color: #196127;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.legend-gradient {
+  width: 150px;
+  height: 20px;
+  background: linear-gradient(to right, #c6e48b, #7bc96f, #239a3b, #196127);
+  border-radius: 3px;
+}
