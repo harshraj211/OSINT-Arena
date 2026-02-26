@@ -94,8 +94,35 @@ module.exports = functions.https.onCall(async (data, context) => {
   }
 
   const user = userSnap.data();
+  const isPro = user.plan === "pro" || user.role === "admin";
 
-  // ── 6. Get recent attempt timestamps for rate limiting ────────────────────────
+  // ── 5b. Access control gate ───────────────────────────────────────────────────
+  // Easy:   always free
+  // Medium: free only if challenge.freeForAll === true (the 30%)
+  // Hard:   free only if it's the weekly free challenge (config/weeklyFreeChallenge)
+  if (!isPro) {
+    const difficulty = challenge.difficulty;
+
+    if (difficulty === "medium" && !challenge.freeForAll) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "This challenge requires a Pro subscription."
+      );
+    }
+
+    if (difficulty === "hard") {
+      // Check weekly free hard challenge
+      const weeklyFreeSnap = await db.collection("config").doc("weeklyFreeChallenge").get();
+      const weeklyFreeId   = weeklyFreeSnap.exists ? weeklyFreeSnap.data().challengeId : null;
+
+      if (challengeId !== weeklyFreeId) {
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "Hard challenges require a Pro subscription. One hard challenge is free each week."
+        );
+      }
+    }
+  }
   const recentAttemptsSnap = await db
     .collection("submissions")
     .where("userId", "==", userId)
@@ -287,6 +314,9 @@ module.exports = functions.https.onCall(async (data, context) => {
 
   if (!alreadySolved) {
     userUpdate.totalSolved = admin.firestore.FieldValue.increment(1);
+    // Denormalised per-difficulty counter — used by checkCertEligibility
+    userUpdate[`solvedByDifficulty.${challenge.difficulty}`] =
+      admin.firestore.FieldValue.increment(1);
   }
 
   batch.update(userRef, userUpdate);

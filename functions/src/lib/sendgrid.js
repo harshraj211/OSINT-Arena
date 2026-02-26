@@ -226,9 +226,113 @@ async function sendBulkEmails(recipients, subject, templateFn, batchDelay = 100)
   return { sent, failed };
 }
 
+/**
+ * Generates the welcome email HTML sent on sign-up.
+ */
+function welcomeTemplate({ username }) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to OSINT Arena</title>
+</head>
+<body style="margin:0;padding:0;background:#0D0F12;font-family:'Inter',Arial,sans-serif;color:#E6EDF3;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0D0F12;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#161B22;border:1px solid #30363D;border-radius:12px;overflow:hidden;max-width:600px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 40px;border-bottom:1px solid #30363D;">
+              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">OSINT ARENA</span>
+            </td>
+          </tr>
+
+          <!-- Hero -->
+          <tr>
+            <td style="padding:40px 40px 0;">
+              <p style="color:#8B949E;font-size:14px;margin:0 0 8px;">Welcome, ${username}</p>
+              <h1 style="font-size:26px;font-weight:700;color:#E6EDF3;margin:0 0 16px;line-height:1.3;">
+                Your training begins now.
+              </h1>
+              <p style="color:#8B949E;font-size:15px;margin:0 0 32px;line-height:1.7;">
+                OSINT Arena is a competitive intelligence training platform where you solve real-world open-source intelligence challenges, earn ELO, and climb the global rankings.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Quick start cards -->
+          <tr>
+            <td style="padding:0 40px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#0D0F12;border:1px solid #30363D;border-radius:8px;padding:18px 20px;width:48%;vertical-align:top;">
+                    <p style="font-family:'Courier New',monospace;font-size:11px;color:#00FF88;letter-spacing:2px;margin:0 0 6px;text-transform:uppercase;">Step 1</p>
+                    <p style="font-size:14px;font-weight:600;color:#E6EDF3;margin:0 0 4px;">Solve your first challenge</p>
+                    <p style="font-size:13px;color:#8B949E;margin:0;">Start with easy challenges to build your ELO base.</p>
+                  </td>
+                  <td style="width:4%;"></td>
+                  <td style="background:#0D0F12;border:1px solid #30363D;border-radius:8px;padding:18px 20px;width:48%;vertical-align:top;">
+                    <p style="font-family:'Courier New',monospace;font-size:11px;color:#00BFFF;letter-spacing:2px;margin:0 0 6px;text-transform:uppercase;">Step 2</p>
+                    <p style="font-size:14px;font-weight:600;color:#E6EDF3;margin:0 0 4px;">Climb the leaderboard</p>
+                    <p style="font-size:13px;color:#8B949E;margin:0;">Every correct answer earns ELO. Maintain your daily streak.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding:0 40px 40px;">
+              <a href="https://osintarena.com/challenges"
+                 style="display:inline-block;background:#00FF88;color:#0D0F12;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">
+                Start Solving →
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;border-top:1px solid #30363D;">
+              <p style="color:#484F58;font-size:12px;margin:0;line-height:1.6;">
+                You're starting at <strong style="color:#8B949E;">500 ELO (Agent)</strong> — work your way up to Phantom.<br>
+                © ${new Date().getUTCFullYear()} OSINT Arena ·
+                <a href="https://osintarena.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+/**
+ * Sends a welcome email to a newly registered user.
+ * @param {Object} params
+ * @param {string} params.email
+ * @param {string} params.username
+ */
+async function sendWelcomeEmail({ email, username }) {
+  await sendEmail({
+    to:      email,
+    subject: `Welcome to OSINT Arena, ${username}`,
+    html:    welcomeTemplate({ username }),
+  });
+}
+
 module.exports = {
   sendEmail,
   sendBulkEmails,
+  sendWelcomeEmail,
   contestReminderTemplate,
   broadcastTemplate,
+  welcomeTemplate,
 };

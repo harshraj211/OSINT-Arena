@@ -1,6 +1,6 @@
 # Context — OSINT Arena
 
-Date: 2026-02-26
+Date: 2026-02-27
 
 This `context.md` records the manual work you (the developer) wrote in this repository and provides a concise description of what the project is about and how to run it.
 
@@ -8,7 +8,7 @@ This `context.md` records the manual work you (the developer) wrote in this repo
 
 ## Files you edited / wrote manually
 
-The following files were created/edited manually by you (based on recent edit history):
+The following files were created/edited manually by you (based on recent edit history). The list has grown substantially since the last snapshot; many components, hooks, services, and backend helpers have been added, so consider this a representative rather than exhaustive inventory:
 
 Frontend (React app)
 - `frontend/package.json`
@@ -63,7 +63,9 @@ Firebase
 Cloud Functions (Firebase functions)
 - `functions/package.json`
 - `functions/.env`
+- `functions/.eslintrc.js`
 - `functions/src/index.js`
+- `functions/src/certifications/checkCertEligibility.js`
 - `functions/src/challenges/openChallenge.js`
 - `functions/src/challenges/submitAnswer.js`
 - `functions/src/leaderboard/resetWeeklyElo.js`
@@ -78,7 +80,11 @@ Cloud Functions (Firebase functions)
 - `functions/src/lib/normalizeAnswer.js`
 - `functions/src/lib/hashAnswer.js`
 - `functions/src/lib/antiCheat.js`
-- `functions/src/lib/sendgrid.js`
+- `functions/src/lib/sendgrid.js` (recently updated)
+- `functions/src/payments/razorpayWebhook.js` (new)
+- `functions/src/lib/heatmap.js` (new)
+
+> **Note:** numerous additional frontend components (tooltips, modals, buttons, profile widgets, leaderboard rows, layouts, etc.), and backend helpers exist now; see the workspace folders for the full current set.
 
 Firebase rules and indexes
 - `firestore.rules`

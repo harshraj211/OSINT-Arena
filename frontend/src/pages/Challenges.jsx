@@ -32,8 +32,27 @@ const DIFF_CONFIG = {
   hard:   { label: "Hard",   color: "var(--color-hard)",   bg: "rgba(255,77,77,0.08)" },
 };
 
+/**
+ * Determines whether a challenge is locked for a free user.
+ *
+ * Rules:
+ *  - Easy:           always free
+ *  - Medium:         free if challenge.freeForAll === true OR challengeIndex < 30% of total
+ *                    (backend marks the free 30% via challenge.freeForAll flag)
+ *  - Hard:           locked UNLESS challenge.weeklyFreeId matches the current
+ *                    week's free hard challenge (set by a weekly Cloud Function)
+ *  - Pro users:      nothing is locked
+ */
+function isChallengeLocked(challenge, isPro, weeklyFreeHardId) {
+  if (isPro) return false;
+  if (challenge.difficulty === "easy") return false;
+  if (challenge.difficulty === "medium") return !challenge.freeForAll;
+  if (challenge.difficulty === "hard") return challenge.id !== weeklyFreeHardId;
+  return false;
+}
+
 export default function Challenges() {
-  const { currentUser, canSolveToday, isPro } = useAuth();
+  const { currentUser, canSolveToday, isPro, dailySolvesRemaining } = useAuth();
   const navigate = useNavigate();
 
   const [challenges, setChallenges]     = useState([]);
@@ -48,6 +67,20 @@ export default function Challenges() {
 
   const [solvedIds, setSolvedIds]       = useState(new Set());
   const [solvedLoading, setSolvedLoading] = useState(true);
+
+  // Weekly free hard challenge ID (set by a scheduled Cloud Function each Monday)
+  const [weeklyFreeHardId, setWeeklyFreeHardId] = useState(null);
+
+  // Load weekly free hard challenge
+  useEffect(() => {
+    async function loadWeeklyFree() {
+      try {
+        const snap = await getDoc(doc(db, "config", "weeklyFreeChallenge"));
+        if (snap.exists()) setWeeklyFreeHardId(snap.data().challengeId || null);
+      } catch {}
+    }
+    loadWeeklyFree();
+  }, []);
 
   // Load user's solved challenges
   useEffect(() => {
@@ -145,9 +178,9 @@ export default function Challenges() {
               {solvedLoading ? "..." : `${totalSolved} solved`}
               {!isPro && (
                 <span className="challenges-limit-note">
-                  {" · "}
+                  {" · Easy + 30% medium free · "}
                   <Link to="/pricing" className="challenges-upgrade-link">
-                    Upgrade for unlimited
+                    Unlock all →
                   </Link>
                 </span>
               )}
@@ -261,22 +294,29 @@ export default function Challenges() {
               {/* Rows */}
               {filteredChallenges.map((challenge, idx) => {
                 const solved  = solvedIds.has(challenge.id);
+                const locked  = isChallengeLocked(challenge, isPro, weeklyFreeHardId);
                 const diff    = DIFF_CONFIG[challenge.difficulty] || DIFF_CONFIG.easy;
-                const canSolve = isPro || canSolveToday();
+                const isWeeklyFree = challenge.id === weeklyFreeHardId && challenge.difficulty === "hard";
 
                 return (
                   <div
                     key={challenge.id}
-                    className={`challenges-row ${solved ? "challenges-row--solved" : ""}`}
-                    onClick={() => canSolve
-                      ? navigate(`/challenges/${challenge.slug}`)
-                      : navigate("/pricing", { state: { reason: "pro_required" } })
+                    className={[
+                      "challenges-row",
+                      solved  ? "challenges-row--solved"  : "",
+                      locked  ? "challenges-row--locked"  : "",
+                    ].filter(Boolean).join(" ")}
+                    onClick={() => locked
+                      ? navigate("/pricing", { state: { reason: "pro_required" } })
+                      : navigate(`/challenges/${challenge.slug}`)
                     }
                     style={{ animationDelay: `${idx * 0.03}s` }}
                   >
-                    {/* Solved status */}
+                    {/* Solved / locked status */}
                     <span className="challenges-col-status">
-                      {solved ? (
+                      {locked ? (
+                        <span className="challenges-lock-icon">⚿</span>
+                      ) : solved ? (
                         <span className="challenges-solved-check">✓</span>
                       ) : (
                         <span className="challenges-unsolved-dot" />
@@ -285,9 +325,17 @@ export default function Challenges() {
 
                     {/* Title */}
                     <span className="challenges-col-title">
-                      <span className="challenges-row-title">{challenge.title}</span>
-                      {solved && (
+                      <span className={`challenges-row-title ${locked ? "challenges-row-title--blur" : ""}`}>
+                        {challenge.title}
+                      </span>
+                      {solved && !locked && (
                         <span className="challenges-solved-label">Solved</span>
+                      )}
+                      {isWeeklyFree && (
+                        <span className="challenges-weekly-free-chip">Free this week</span>
+                      )}
+                      {locked && (
+                        <span className="challenges-pro-chip">PRO</span>
                       )}
                     </span>
 

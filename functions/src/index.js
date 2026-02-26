@@ -32,13 +32,27 @@ initializeApp();
 exports.openChallenge = require("./challenges/openChallenge");
 exports.submitAnswer  = require("./challenges/submitAnswer");
 
+// rotateWeeklyFreeChallenge → scheduled Mon 00:00 UTC — picks this week's free hard challenge
+const { rotateWeeklyFreeChallenge } = require("./challenges/rotateWeeklyFreeChallenge");
+exports.rotateWeeklyFreeChallenge   = rotateWeeklyFreeChallenge;
+
 // ────────────────────────────────────────────────────────────────────────────
-// AUTH FUNCTIONS  (v1 · Auth triggers + HTTPS Callable)
-// onUserCreated  → fires on every new Firebase Auth user
-// setCustomClaims → called after Razorpay payment to grant pro claim
+// AUTH FUNCTIONS
+// onUserCreated   → v1 Auth trigger — fires on every new Firebase Auth user
+// setCustomClaims → v2 Callable — syncs Firestore plan → JWT custom claims
 // ────────────────────────────────────────────────────────────────────────────
-exports.onUserCreated   = require("./auth/onUserCreated");
-exports.setCustomClaims = require("./auth/setCustomClaims");
+exports.onUserCreated = require("./auth/onUserCreated");
+
+const { setCustomClaims } = require("./auth/setCustomClaims");
+exports.setCustomClaims   = setCustomClaims;
+
+// ── PAYMENT WEBHOOK  (v2 · raw HTTPS — NOT a callable)
+// Razorpay POSTs here on payment.captured / subscription.charged / payment.failed
+// Set this URL in Razorpay Dashboard → Settings → Webhooks:
+//   https://<region>-<project-id>.cloudfunctions.net/razorpayWebhook
+// ────────────────────────────────────────────────────────────────────────────
+const { razorpayWebhook } = require("./payments/razorpayWebhook");
+exports.razorpayWebhook   = razorpayWebhook;
 
 // ────────────────────────────────────────────────────────────────────────────
 // CONTEST FUNCTIONS  (v2 · HTTPS Callable + Scheduled)

@@ -26,24 +26,25 @@ const PLANS = {
 };
 
 const FREE_FEATURES = [
-  "5 challenges per day",
-  "Full challenge library access",
-  "Global ELO ranking",
-  "Activity heatmap",
+  "All easy challenges",
+  "30% of medium challenges",
+  "1 free hard challenge per week",
+  "Global ELO ranking + heatmap",
   "Public profile page",
 ];
 
 const PRO_FEATURES = [
-  "Unlimited challenges daily",
+  "All medium challenges (70% unlocked)",
+  "All hard challenges",
   "Weekly & monthly contests",
+  "OSINT certifications",
+  "Advanced analytics",
   "2 streak freezes per month",
-  "Certification eligibility",
-  "Priority support",
   "Everything in Free",
 ];
 
 export default function Pricing() {
-  const { currentUser, isPro } = useAuth();
+  const { currentUser, isPro, syncClaims } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -98,25 +99,23 @@ export default function Pricing() {
         modal: {
           ondismiss: () => setLoading(false),
         },
-        handler: async (response) => {
-          // Payment successful — verify on backend
+        handler: async (_response) => {
+          // Payment captured — webhook handles Firestore write.
+          // We call syncClaims to force a JWT refresh so isPro updates
+          // in the current session without waiting for the next token rotation.
           try {
-            // TODO: call verifyRazorpayPayment Cloud Function
-            // await verifyPayment({
-            //   razorpay_payment_id: response.razorpay_payment_id,
-            //   razorpay_order_id:   response.razorpay_order_id,
-            //   razorpay_signature:  response.razorpay_signature,
-            //   billing,
-            // });
+            await syncClaims();         // calls setCustomClaims CF + force token refresh
             setSuccess(true);
             setLoading(false);
-            // AuthContext will auto-update via Firestore listener when plan changes
             setTimeout(() => {
               navigate(from || "/dashboard");
             }, 2500);
           } catch (err) {
-            setError("Payment received but verification failed. Please contact support.");
+            // syncClaims failure is non-fatal — the webhook will have upgraded
+            // the account; user just needs to sign out and back in.
+            setSuccess(true);           // payment still succeeded
             setLoading(false);
+            setTimeout(() => navigate(from || "/dashboard"), 2500);
           }
         },
       };

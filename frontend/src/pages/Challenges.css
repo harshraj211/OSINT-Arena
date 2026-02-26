@@ -386,3 +386,49 @@
   .challenges-diff-tabs { display: none; }
   .challenges-search-wrap { max-width: 100%; flex: 1; }
 }
+
+/* ── Locked challenge rows (Pro-gated) ───────────────────────────────────── */
+.challenges-row--locked {
+  opacity: 0.75;
+  cursor: pointer;
+}
+.challenges-row--locked:hover {
+  border-color: rgba(255,77,77,0.3);
+  background: rgba(255,77,77,0.03);
+}
+.challenges-lock-icon {
+  font-size: 13px;
+  color: var(--color-text-subtle);
+}
+.challenges-row-title--blur {
+  filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+  transition: filter 0.2s ease;
+}
+.challenges-row--locked:hover .challenges-row-title--blur {
+  filter: blur(2px);
+}
+.challenges-pro-chip {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  background: rgba(0,255,136,0.08);
+  border: 1px solid rgba(0,255,136,0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.challenges-weekly-free-chip {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-warning);
+  background: rgba(255,149,0,0.08);
+  border: 1px solid rgba(255,149,0,0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
