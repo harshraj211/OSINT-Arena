@@ -2,6 +2,9 @@
 
 Date: 2026-02-27
 
+> **Note:** This file is now added to `.gitignore` so that local developer context isn’t committed to the repository.
+
+
 This `context.md` records the manual work you (the developer) wrote in this repository and provides a concise description of what the project is about and how to run it.
 
 ---

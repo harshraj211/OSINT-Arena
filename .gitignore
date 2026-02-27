@@ -41,3 +41,6 @@ coverage/
 
 
 serviceAccountKey*.json
+
+# Misc
+context.md
