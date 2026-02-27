@@ -28,6 +28,7 @@ import { getAuth, connectAuthEmulator }           from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { getAnalytics, isSupported }              from "firebase/analytics";
+import { getStorage }                             from "firebase/storage";
 
 // ── Firebase config from Vite env ─────────────────────────────────────────────
 const firebaseConfig = {
@@ -64,6 +65,7 @@ export const db = getFirestore(app);
 // ── Cloud Functions ───────────────────────────────────────────────────────────
 const region = import.meta.env.VITE_FIREBASE_REGION || "us-central1";
 export const functions = getFunctions(app, region);
+export const storage = getStorage(app);
 
 // ── Emulator suite ────────────────────────────────────────────────────────────
 // Set VITE_USE_EMULATOR=true in frontend/.env.local to activate.

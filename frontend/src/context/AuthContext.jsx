@@ -1,37 +1,9 @@
 /**
- * AuthContext.jsx
- * Central authentication state for the entire app.
- * Wraps Firebase Auth — all components consume this, never Firebase directly.
- *
- * Key behaviours:
- *  - onIdTokenChanged: re-reads custom claims on every token refresh, including
- *    after setCustomClaims Cloud Function runs (token refresh = new claims)
- *  - Firestore onSnapshot: streams users/{uid} profile in real-time
- *  - syncClaims(): calls setCustomClaims CF then force-refreshes the JWT,
- *    used by Pricing.jsx after a successful Razorpay payment
- *  - Pro expiry: checks proExpiresAt claim on token load; downgrades locally
- *    if expired (CF handles the authoritative downgrade)
- *  - canSolveToday(): free users limited to 5 solves/day via Firestore counter
- *
- * Provided values:
- *  currentUser      FirebaseUser | null
- *  userProfile      Firestore users/{uid} doc | null
- *  loading          true while first auth state is resolving
- *  profileLoading   true while Firestore profile is first loading
- *  isAuthenticated  Boolean
- *  isVerified       email verified
- *  isAdmin          role === "admin" (from Firestore)
- *  isMod            role === "mod" | "admin"
- *  isPro            plan === "pro" (from JWT claim — not Firestore, for speed)
- *  claimsReady      true once JWT custom claims have been read at least once
- *  login / register / logout / resetPassword / resendVerification
- *  refreshUser      reload + force token refresh
- *  syncClaims       call setCustomClaims CF + force token refresh (post-payment)
- *  canSolveToday    () => boolean — free tier daily limit
+ * AuthContext.jsx — v2
+ * Adds: Google Sign-In, auto Firestore profile creation, RBAC
  *
  * File location: frontend/src/context/AuthContext.jsx
  */
-
 import {
   createContext, useContext, useEffect,
   useState, useCallback, useRef,
@@ -44,15 +16,19 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification,
   reload,
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
 } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  doc, onSnapshot, setDoc, getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { auth, db } from "../firebase/config";
 
-// ── Context ───────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
 
-// ── Cloud Function reference (lazy — only called when needed) ─────────────────
 let _setCustomClaimsFn = null;
 function getSetCustomClaimsFn() {
   if (!_setCustomClaimsFn) {
@@ -61,119 +37,174 @@ function getSetCustomClaimsFn() {
   return _setCustomClaimsFn;
 }
 
-// ── Provider ──────────────────────────────────────────────────────────────────
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+
+// ── Create Firestore profile if it doesn't exist ──────────────────────────────
+async function ensureUserProfile(user, extraData = {}) {
+  const ref  = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) return snap.data();
+
+  const provider = user.providerData?.[0]?.providerId || "password";
+  const username  = sanitizeUsername(
+    extraData.username || user.displayName || user.email?.split("@")[0] || user.uid.slice(0, 8)
+  );
+
+  const profile = {
+    uid:          user.uid,
+    email:        user.email || "",
+    username,
+    displayName:  user.displayName || username,
+    photoURL:     user.photoURL    || null,
+    provider,
+    role:         "user",
+    plan:         "free",
+    elo:          500,
+    weeklyElo:    0,
+    monthlyElo:   0,
+    totalSolved:  0,
+    correctSubmissions: 0,
+    wrongSubmissions:   0,
+    solvedByDifficulty: { easy: 0, medium: 0, hard: 0 },
+    currentStreak:  0,
+    maxStreak:      0,
+    lastActiveDate: null,
+    dailySolves:    {},
+    streakFreezes:  0,
+    certifications: {},
+    totalCertificates: 0,
+    badges:         [],
+    isBanned:       false,
+    isFlagged:      false,
+    warningCount:   0,
+    flagCount:      0,
+    proSince:       null,
+    proExpiresAt:   null,
+    createdAt:      serverTimestamp(),
+    lastLoginAt:    serverTimestamp(),
+  };
+
+  const publicProfile = {
+    uid:          user.uid,
+    username,
+    plan:         "free",
+    elo:          500,
+    weeklyElo:    0,
+    monthlyElo:   0,
+    totalSolved:  0,
+    currentStreak: 0,
+    maxStreak:    0,
+    badges:       [],
+    latestCert:   null,
+    createdAt:    serverTimestamp(),
+  };
+
+  await Promise.all([
+    setDoc(ref, profile),
+    setDoc(doc(db, "publicProfiles", user.uid), publicProfile),
+  ]);
+
+  return profile;
+}
+
+function sanitizeUsername(raw) {
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_+/g, "_")
+    .slice(0, 20);
+  return cleaned.length < 3 ? `user_${cleaned.padEnd(3, "0")}`.slice(0, 20) : cleaned;
+}
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser]       = useState(null);
   const [userProfile, setUserProfile]       = useState(null);
-  const [claims, setClaims]                 = useState(null);   // JWT custom claims
+  const [claims, setClaims]                 = useState(null);
   const [loading, setLoading]               = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   const [claimsReady, setClaimsReady]       = useState(false);
-
-  // Track the Firestore unsubscribe so we can clean up when user changes
   const profileUnsubRef = useRef(null);
 
-  // ── onIdTokenChanged ────────────────────────────────────────────────────────
-  // Fires on:
-  //   - sign-in / sign-out
-  //   - token refresh (every ~1h automatically)
-  //   - force refresh via getIdToken(true) — which we call after setCustomClaims
   useEffect(() => {
     const unsubAuth = onIdTokenChanged(auth, async (user) => {
       setCurrentUser(user);
 
       if (!user) {
-        // Signed out — clean up everything
         setUserProfile(null);
         setClaims(null);
         setClaimsReady(false);
         setProfileLoading(false);
         setLoading(false);
-
-        if (profileUnsubRef.current) {
-          profileUnsubRef.current();
-          profileUnsubRef.current = null;
-        }
+        if (profileUnsubRef.current) { profileUnsubRef.current(); profileUnsubRef.current = null; }
         return;
       }
 
-      // ── Read JWT custom claims ─────────────────────────────────────────
+      // Read JWT claims
       try {
-        const idTokenResult = await user.getIdTokenResult();
-        const tokenClaims   = idTokenResult.claims || {};
-
-        // Check Pro expiry from claim
-        const proExpiresAt = tokenClaims.proExpiresAt
-          ? new Date(tokenClaims.proExpiresAt)
-          : null;
-        const proExpired = proExpiresAt ? proExpiresAt < new Date() : false;
-
+        const result = await user.getIdTokenResult();
+        const c = result.claims || {};
+        const proExpired = c.proExpiresAt ? new Date(c.proExpiresAt) < new Date() : false;
         setClaims({
-          plan:          proExpired ? "free" : (tokenClaims.plan || "free"),
-          role:          tokenClaims.role  || "user",
-          proExpiresAt:  tokenClaims.proExpiresAt || null,
+          plan:         proExpired ? "free" : (c.plan || "free"),
+          role:         c.role || "user",
+          proExpiresAt: c.proExpiresAt || null,
           proExpired,
         });
-      } catch (err) {
-        console.error("AuthContext: failed to read claims", err);
+      } catch {
         setClaims({ plan: "free", role: "user", proExpiresAt: null, proExpired: false });
       }
-
       setClaimsReady(true);
 
-      // ── Subscribe to Firestore profile (only once per user session) ────
+      // Subscribe to Firestore profile
       if (!profileUnsubRef.current) {
         setProfileLoading(true);
-
         const userRef = doc(db, "users", user.uid);
-        profileUnsubRef.current = onSnapshot(
-          userRef,
+        profileUnsubRef.current = onSnapshot(userRef,
           (snap) => {
-            if (snap.exists()) {
-              setUserProfile({ id: snap.id, ...snap.data() });
-            } else {
-              // onUserCreated Cloud Function may have a short delay
-              setUserProfile(null);
-            }
+            setUserProfile(snap.exists() ? { id: snap.id, ...snap.data() } : null);
             setProfileLoading(false);
             setLoading(false);
           },
-          (err) => {
-            console.error("AuthContext: profile snapshot error", err);
-            setProfileLoading(false);
-            setLoading(false);
-          }
+          () => { setProfileLoading(false); setLoading(false); }
         );
       } else {
-        // Already subscribed — loading is done
         setLoading(false);
       }
     });
 
     return () => {
       unsubAuth();
-      if (profileUnsubRef.current) {
-        profileUnsubRef.current();
-        profileUnsubRef.current = null;
-      }
+      if (profileUnsubRef.current) { profileUnsubRef.current(); profileUnsubRef.current = null; }
     };
   }, []);
 
-  // ── Auth actions ───────────────────────────────────────────────────────────
-
+  // ── Auth actions ────────────────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     return await signInWithEmailAndPassword(auth, email, password);
   }, []);
 
-  const register = useCallback(async (email, password) => {
+  const loginWithGoogle = useCallback(async () => {
+    const result = await signInWithPopup(auth, googleProvider);
+    // Auto-create profile for new Google users
+    await ensureUserProfile(result.user);
+    return result;
+  }, []);
+
+  const register = useCallback(async (email, password, username) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
+    // Set displayName immediately
+    await updateProfile(result.user, { displayName: username });
+    // Create Firestore profile
+    await ensureUserProfile(result.user, { username });
+    // Send verification email
     await sendEmailVerification(result.user);
     return result;
   }, []);
 
   const logout = useCallback(async () => {
     await signOut(auth);
-    // onIdTokenChanged fires with null and cleans up state
   }, []);
 
   const resetPassword = useCallback(async (email) => {
@@ -186,117 +217,64 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser]);
 
-  /**
-   * refreshUser — reloads the Firebase user object and force-refreshes the
-   * JWT to pick up any claim changes made directly (e.g. via admin panel).
-   */
   const refreshUser = useCallback(async () => {
     if (!currentUser) return;
     await reload(currentUser);
-    await currentUser.getIdToken(/* forceRefresh= */ true);
-    // onIdTokenChanged fires automatically with the new token
+    await currentUser.getIdToken(true);
   }, [currentUser]);
 
-  /**
-   * syncClaims — called from Pricing.jsx after a successful Razorpay payment.
-   *
-   * Flow:
-   *  1. Call setCustomClaims Cloud Function → it reads Firestore + sets JWT claims
-   *  2. Force-refresh the ID token → onIdTokenChanged fires → claims state updates
-   *  3. Return the result so the caller can update UI immediately
-   */
   const syncClaims = useCallback(async () => {
     if (!currentUser) return null;
     try {
-      const fn     = getSetCustomClaimsFn();
-      const result = await fn();                          // calls Cloud Function
-      await currentUser.getIdToken(/* forceRefresh= */ true); // triggers onIdTokenChanged
+      const fn = getSetCustomClaimsFn();
+      const result = await fn();
+      await currentUser.getIdToken(true);
       return result.data;
     } catch (err) {
-      console.error("AuthContext: syncClaims failed", err);
+      console.error("syncClaims failed", err);
       throw err;
     }
   }, [currentUser]);
 
-  // ── Derived state ──────────────────────────────────────────────────────────
+  // ── Derived state ────────────────────────────────────────────────────────────
   const isVerified      = Boolean(currentUser?.emailVerified);
   const isAuthenticated = Boolean(currentUser);
+  const isAdmin         = userProfile?.role === "admin";
+  const isMod           = userProfile?.role === "mod" || userProfile?.role === "moderator" || isAdmin;
+  const isPro           = isAdmin || claims?.plan === "pro";
 
-  // Role comes from Firestore (more reliable for admin checks than JWT)
-  const isAdmin = userProfile?.role === "admin";
-  const isMod   = userProfile?.role === "mod" || isAdmin;
-
-  // Plan comes from JWT custom claim (fastest — no Firestore read needed).
-  // Admins always get Pro perks regardless of their plan field.
-  const isPro = isAdmin || claims?.plan === "pro";
-
-  /**
-   * canSolveToday — free-tier daily limit (5 solves/day).
-   * Pro users and admins are always unrestricted.
-   * The Firestore dailySolves counter is written by submitAnswer Cloud Function.
-   */
   const canSolveToday = useCallback(() => {
     if (isPro) return true;
-    const today       = new Date().toISOString().split("T")[0];
-    const dailySolves = userProfile?.dailySolves?.[today] ?? 0;
-    return dailySolves < 5;
+    const today = new Date().toISOString().split("T")[0];
+    return (userProfile?.dailySolves?.[today] ?? 0) < 5;
   }, [isPro, userProfile]);
 
-  /**
-   * dailySolvesRemaining — how many solves left today (for dashboard display).
-   */
   const dailySolvesRemaining = useCallback(() => {
     if (isPro) return Infinity;
-    const today       = new Date().toISOString().split("T")[0];
-    const dailySolves = userProfile?.dailySolves?.[today] ?? 0;
-    return Math.max(0, 5 - dailySolves);
+    const today = new Date().toISOString().split("T")[0];
+    return Math.max(0, 5 - (userProfile?.dailySolves?.[today] ?? 0));
   }, [isPro, userProfile]);
 
-  // ── Context value ──────────────────────────────────────────────────────────
+  // ── RBAC helpers ─────────────────────────────────────────────────────────────
+  const canCreateChallenge  = isMod;
+  const canEditChallenge    = isMod;
+  const canDeleteChallenge  = isAdmin; // permanent delete
+  const canManageUsers      = isAdmin;
+
   const value = {
-    // Core auth state
-    currentUser,
-    userProfile,
-    loading,
-    profileLoading,
-    claimsReady,
-
-    // Derived booleans
-    isAuthenticated,
-    isVerified,
-    isAdmin,
-    isMod,
-    isPro,
-
-    // Claims (JWT)
-    claims,
-
-    // Daily limit helpers
-    canSolveToday,
-    dailySolvesRemaining,
-
-    // Actions
-    login,
-    register,
-    logout,
-    resetPassword,
-    resendVerification,
-    refreshUser,
-    syncClaims,
+    currentUser, userProfile, loading, profileLoading, claimsReady, claims,
+    isAuthenticated, isVerified, isAdmin, isMod, isPro,
+    canCreateChallenge, canEditChallenge, canDeleteChallenge, canManageUsers,
+    canSolveToday, dailySolvesRemaining,
+    login, loginWithGoogle, register, logout,
+    resetPassword, resendVerification, refreshUser, syncClaims,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ── Hook ───────────────────────────────────────────────────────────────────────
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

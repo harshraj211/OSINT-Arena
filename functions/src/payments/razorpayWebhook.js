@@ -1,302 +1,237 @@
 /**
- * AuthContext.jsx
- * Central authentication state for the entire app.
- * Wraps Firebase Auth — all components consume this, never Firebase directly.
+ * razorpayWebhook.js
+ * HTTP endpoint — receives Razorpay payment webhooks.
+ * NOT a callable — this is a raw HTTPS function that Razorpay POSTs to.
  *
- * Key behaviours:
- *  - onIdTokenChanged: re-reads custom claims on every token refresh, including
- *    after setCustomClaims Cloud Function runs (token refresh = new claims)
- *  - Firestore onSnapshot: streams users/{uid} profile in real-time
- *  - syncClaims(): calls setCustomClaims CF then force-refreshes the JWT,
- *    used by Pricing.jsx after a successful Razorpay payment
- *  - Pro expiry: checks proExpiresAt claim on token load; downgrades locally
- *    if expired (CF handles the authoritative downgrade)
- *  - canSolveToday(): free users limited to 5 solves/day via Firestore counter
+ * Endpoint URL (set in Razorpay Dashboard → Webhooks):
+ *   https://<region>-<project>.cloudfunctions.net/razorpayWebhook
  *
- * Provided values:
- *  currentUser      FirebaseUser | null
- *  userProfile      Firestore users/{uid} doc | null
- *  loading          true while first auth state is resolving
- *  profileLoading   true while Firestore profile is first loading
- *  isAuthenticated  Boolean
- *  isVerified       email verified
- *  isAdmin          role === "admin" (from Firestore)
- *  isMod            role === "mod" | "admin"
- *  isPro            plan === "pro" (from JWT claim — not Firestore, for speed)
- *  claimsReady      true once JWT custom claims have been read at least once
- *  login / register / logout / resetPassword / resendVerification
- *  refreshUser      reload + force token refresh
- *  syncClaims       call setCustomClaims CF + force token refresh (post-payment)
- *  canSolveToday    () => boolean — free tier daily limit
+ * Handles events:
+ *   payment.captured   → activate Pro subscription
+ *   subscription.charged → renew Pro (if using Razorpay Subscriptions)
+ *   payment.failed     → log failure, no action needed on our side
  *
- * File location: frontend/src/context/AuthContext.jsx
+ * Security:
+ *   - Verifies X-Razorpay-Signature HMAC-SHA256 header against raw body
+ *   - Webhook secret stored in Firebase Secret Manager as RAZORPAY_WEBHOOK_SECRET
+ *   - Idempotent: uses paymentId as Firestore doc ID to prevent double-processing
+ *
+ * Firestore writes on success:
+ *   users/{uid}.plan = "pro"
+ *   users/{uid}.proSince = serverTimestamp()
+ *   users/{uid}.proExpiresAt = +30 or +365 days depending on billing period
+ *   payments/{paymentId} = full payment record
+ *
+ * Also calls setCustomClaims to update the user's JWT so isPro is available
+ * client-side immediately (via token refresh).
+ *
+ * File location: functions/src/payments/razorpayWebhook.js
  */
 
-import {
-  createContext, useContext, useEffect,
-  useState, useCallback, useRef,
-} from "react";
-import {
-  onIdTokenChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  reload,
-} from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { auth, db } from "../firebase/config";
+"use strict";
 
-// ── Context ───────────────────────────────────────────────────────────────────
-const AuthContext = createContext(null);
+const { onRequest }           = require("firebase-functions/v2/https");
+const { defineSecret }        = require("firebase-functions/params");
+const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { getAuth }             = require("firebase-admin/auth");
+const crypto                  = require("crypto");
 
-// ── Cloud Function reference (lazy — only called when needed) ─────────────────
-let _setCustomClaimsFn = null;
-function getSetCustomClaimsFn() {
-  if (!_setCustomClaimsFn) {
-    _setCustomClaimsFn = httpsCallable(getFunctions(), "setCustomClaims");
-  }
-  return _setCustomClaimsFn;
-}
+const db   = getFirestore();
+const auth = getAuth();
 
-// ── Provider ──────────────────────────────────────────────────────────────────
-export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser]       = useState(null);
-  const [userProfile, setUserProfile]       = useState(null);
-  const [claims, setClaims]                 = useState(null);   // JWT custom claims
-  const [loading, setLoading]               = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [claimsReady, setClaimsReady]       = useState(false);
+// Secret stored in Firebase Secret Manager
+// Deploy with: firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET
+const RAZORPAY_WEBHOOK_SECRET = defineSecret("RAZORPAY_WEBHOOK_SECRET");
 
-  // Track the Firestore unsubscribe so we can clean up when user changes
-  const profileUnsubRef = useRef(null);
+// Subscription durations
+const BILLING_DURATIONS = {
+  monthly: 30,
+  yearly:  365,
+};
 
-  // ── onIdTokenChanged ────────────────────────────────────────────────────────
-  // Fires on:
-  //   - sign-in / sign-out
-  //   - token refresh (every ~1h automatically)
-  //   - force refresh via getIdToken(true) — which we call after setCustomClaims
-  useEffect(() => {
-    const unsubAuth = onIdTokenChanged(auth, async (user) => {
-      setCurrentUser(user);
-
-      if (!user) {
-        // Signed out — clean up everything
-        setUserProfile(null);
-        setClaims(null);
-        setClaimsReady(false);
-        setProfileLoading(false);
-        setLoading(false);
-
-        if (profileUnsubRef.current) {
-          profileUnsubRef.current();
-          profileUnsubRef.current = null;
-        }
-        return;
-      }
-
-      // ── Read JWT custom claims ─────────────────────────────────────────
-      try {
-        const idTokenResult = await user.getIdTokenResult();
-        const tokenClaims   = idTokenResult.claims || {};
-
-        // Check Pro expiry from claim
-        const proExpiresAt = tokenClaims.proExpiresAt
-          ? new Date(tokenClaims.proExpiresAt)
-          : null;
-        const proExpired = proExpiresAt ? proExpiresAt < new Date() : false;
-
-        setClaims({
-          plan:          proExpired ? "free" : (tokenClaims.plan || "free"),
-          role:          tokenClaims.role  || "user",
-          proExpiresAt:  tokenClaims.proExpiresAt || null,
-          proExpired,
-        });
-      } catch (err) {
-        console.error("AuthContext: failed to read claims", err);
-        setClaims({ plan: "free", role: "user", proExpiresAt: null, proExpired: false });
-      }
-
-      setClaimsReady(true);
-
-      // ── Subscribe to Firestore profile (only once per user session) ────
-      if (!profileUnsubRef.current) {
-        setProfileLoading(true);
-
-        const userRef = doc(db, "users", user.uid);
-        profileUnsubRef.current = onSnapshot(
-          userRef,
-          (snap) => {
-            if (snap.exists()) {
-              setUserProfile({ id: snap.id, ...snap.data() });
-            } else {
-              // onUserCreated Cloud Function may have a short delay
-              setUserProfile(null);
-            }
-            setProfileLoading(false);
-            setLoading(false);
-          },
-          (err) => {
-            console.error("AuthContext: profile snapshot error", err);
-            setProfileLoading(false);
-            setLoading(false);
-          }
-        );
-      } else {
-        // Already subscribed — loading is done
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      unsubAuth();
-      if (profileUnsubRef.current) {
-        profileUnsubRef.current();
-        profileUnsubRef.current = null;
-      }
-    };
-  }, []);
-
-  // ── Auth actions ───────────────────────────────────────────────────────────
-
-  const login = useCallback(async (email, password) => {
-    return await signInWithEmailAndPassword(auth, email, password);
-  }, []);
-
-  const register = useCallback(async (email, password) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    await sendEmailVerification(result.user);
-    return result;
-  }, []);
-
-  const logout = useCallback(async () => {
-    await signOut(auth);
-    // onIdTokenChanged fires with null and cleans up state
-  }, []);
-
-  const resetPassword = useCallback(async (email) => {
-    await sendPasswordResetEmail(auth, email);
-  }, []);
-
-  const resendVerification = useCallback(async () => {
-    if (currentUser && !currentUser.emailVerified) {
-      await sendEmailVerification(currentUser);
+exports.razorpayWebhook = onRequest(
+  {
+    secrets: [RAZORPAY_WEBHOOK_SECRET],
+    // Raw body needed for signature verification — do NOT use express json() middleware
+  },
+  async (req, res) => {
+    // ── Only accept POST ──────────────────────────────────────────────────
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
     }
-  }, [currentUser]);
 
-  /**
-   * refreshUser — reloads the Firebase user object and force-refreshes the
-   * JWT to pick up any claim changes made directly (e.g. via admin panel).
-   */
-  const refreshUser = useCallback(async () => {
-    if (!currentUser) return;
-    await reload(currentUser);
-    await currentUser.getIdToken(/* forceRefresh= */ true);
-    // onIdTokenChanged fires automatically with the new token
-  }, [currentUser]);
+    // ── Verify Razorpay signature ─────────────────────────────────────────
+    const receivedSig = req.headers["x-razorpay-signature"];
+    if (!receivedSig) {
+      console.warn("razorpayWebhook: missing signature header");
+      res.status(400).send("Missing signature");
+      return;
+    }
 
-  /**
-   * syncClaims — called from Pricing.jsx after a successful Razorpay payment.
-   *
-   * Flow:
-   *  1. Call setCustomClaims Cloud Function → it reads Firestore + sets JWT claims
-   *  2. Force-refresh the ID token → onIdTokenChanged fires → claims state updates
-   *  3. Return the result so the caller can update UI immediately
-   */
-  const syncClaims = useCallback(async () => {
-    if (!currentUser) return null;
+    const secret = RAZORPAY_WEBHOOK_SECRET.value();
+    const rawBody = req.rawBody || JSON.stringify(req.body); // Firebase provides rawBody
+
+    const expectedSig = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+
+    if (!crypto.timingSafeEqual(
+      Buffer.from(receivedSig, "hex"),
+      Buffer.from(expectedSig, "hex")
+    )) {
+      console.warn("razorpayWebhook: signature mismatch");
+      res.status(400).send("Invalid signature");
+      return;
+    }
+
+    // ── Parse event ───────────────────────────────────────────────────────
+    const event = req.body;
+    const eventType = event?.event;
+
+    console.log(`razorpayWebhook: received event ${eventType}`);
+
     try {
-      const fn     = getSetCustomClaimsFn();
-      const result = await fn();                          // calls Cloud Function
-      await currentUser.getIdToken(/* forceRefresh= */ true); // triggers onIdTokenChanged
-      return result.data;
+      switch (eventType) {
+        case "payment.captured":
+          await handlePaymentCaptured(event.payload.payment.entity);
+          break;
+
+        case "subscription.charged":
+          await handleSubscriptionCharged(event.payload);
+          break;
+
+        case "payment.failed":
+          await handlePaymentFailed(event.payload.payment.entity);
+          break;
+
+        default:
+          // Unhandled event type — acknowledge and ignore
+          console.log(`razorpayWebhook: unhandled event type: ${eventType}`);
+      }
+
+      // Always return 200 so Razorpay doesn't retry
+      res.status(200).json({ received: true });
+
     } catch (err) {
-      console.error("AuthContext: syncClaims failed", err);
-      throw err;
+      console.error("razorpayWebhook: processing error", err);
+      // Return 500 so Razorpay retries — but only for unexpected errors,
+      // not for business logic failures like "user not found"
+      res.status(500).json({ error: "Internal processing error" });
     }
-  }, [currentUser]);
+  }
+);
 
-  // ── Derived state ──────────────────────────────────────────────────────────
-  const isVerified      = Boolean(currentUser?.emailVerified);
-  const isAuthenticated = Boolean(currentUser);
+// ── Handle payment.captured ───────────────────────────────────────────────────
+async function handlePaymentCaptured(payment) {
+  const paymentId = payment.id;
+  const email     = payment.email;
+  const notes     = payment.notes || {};
+  const billing   = notes.billing || "monthly"; // passed from frontend checkout options
 
-  // Role comes from Firestore (more reliable for admin checks than JWT)
-  const isAdmin = userProfile?.role === "admin";
-  const isMod   = userProfile?.role === "mod" || isAdmin;
+  // ── Idempotency check ─────────────────────────────────────────────────
+  const paymentRef = db.collection("payments").doc(paymentId);
+  const existing   = await paymentRef.get();
+  if (existing.exists) {
+    console.log(`razorpayWebhook: payment ${paymentId} already processed — skipping`);
+    return;
+  }
 
-  // Plan comes from JWT custom claim (fastest — no Firestore read needed).
-  // Admins always get Pro perks regardless of their plan field.
-  const isPro = isAdmin || claims?.plan === "pro";
+  // ── Find user by email ────────────────────────────────────────────────
+  let uid;
+  try {
+    const userRecord = await auth.getUserByEmail(email);
+    uid = userRecord.uid;
+  } catch (err) {
+    console.error(`razorpayWebhook: no Firebase user for email ${email}`, err);
+    // Store the payment anyway for manual reconciliation
+    await paymentRef.set({
+      paymentId,
+      email,
+      amount:    payment.amount,
+      currency:  payment.currency,
+      billing,
+      status:    "captured_no_user",
+      createdAt: Timestamp.now(),
+      rawPayment: payment,
+    });
+    return;
+  }
 
-  /**
-   * canSolveToday — free-tier daily limit (5 solves/day).
-   * Pro users and admins are always unrestricted.
-   * The Firestore dailySolves counter is written by submitAnswer Cloud Function.
-   */
-  const canSolveToday = useCallback(() => {
-    if (isPro) return true;
-    const today       = new Date().toISOString().split("T")[0];
-    const dailySolves = userProfile?.dailySolves?.[today] ?? 0;
-    return dailySolves < 5;
-  }, [isPro, userProfile]);
+  // ── Compute expiry ────────────────────────────────────────────────────
+  const daysToAdd   = BILLING_DURATIONS[billing] || 30;
+  const proExpiresAt = new Date();
+  proExpiresAt.setDate(proExpiresAt.getDate() + daysToAdd);
 
-  /**
-   * dailySolvesRemaining — how many solves left today (for dashboard display).
-   */
-  const dailySolvesRemaining = useCallback(() => {
-    if (isPro) return Infinity;
-    const today       = new Date().toISOString().split("T")[0];
-    const dailySolves = userProfile?.dailySolves?.[today] ?? 0;
-    return Math.max(0, 5 - dailySolves);
-  }, [isPro, userProfile]);
+  // ── Atomic batch write ────────────────────────────────────────────────
+  const batch = db.batch();
 
-  // ── Context value ──────────────────────────────────────────────────────────
-  const value = {
-    // Core auth state
-    currentUser,
-    userProfile,
-    loading,
-    profileLoading,
-    claimsReady,
+  // Update user profile
+  const userRef = db.collection("users").doc(uid);
+  batch.update(userRef, {
+    plan:           "pro",
+    proSince:       FieldValue.serverTimestamp(),
+    proExpiresAt:   Timestamp.fromDate(proExpiresAt),
+    billingPeriod:  billing,
+    lastPaymentId:  paymentId,
+  });
 
-    // Derived booleans
-    isAuthenticated,
-    isVerified,
-    isAdmin,
-    isMod,
-    isPro,
+  // Also update publicProfiles so leaderboard shows PRO badge
+  const pubRef = db.collection("publicProfiles").doc(uid);
+  batch.update(pubRef, { plan: "pro" });
 
-    // Claims (JWT)
-    claims,
+  // Record the payment
+  batch.set(paymentRef, {
+    paymentId,
+    uid,
+    email,
+    amount:       payment.amount,   // in paise
+    currency:     payment.currency,
+    billing,
+    status:       "captured",
+    proExpiresAt: Timestamp.fromDate(proExpiresAt),
+    createdAt:    Timestamp.now(),
+    rawPayment:   payment,
+  });
 
-    // Daily limit helpers
-    canSolveToday,
-    dailySolvesRemaining,
+  await batch.commit();
 
-    // Actions
-    login,
-    register,
-    logout,
-    resetPassword,
-    resendVerification,
-    refreshUser,
-    syncClaims,
-  };
+  // ── Update Firebase Auth custom claims ───────────────────────────────
+  // This makes isPro available in the JWT token immediately after next refresh
+  await auth.setCustomUserClaims(uid, {
+    plan:  "pro",
+    proExpiresAt: proExpiresAt.toISOString(),
+  });
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  console.log(`razorpayWebhook: activated Pro for uid=${uid} (${billing}, expires ${proExpiresAt.toISOString()})`);
 }
 
-// ── Hook ───────────────────────────────────────────────────────────────────────
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+// ── Handle subscription.charged (Razorpay Subscriptions API) ─────────────────
+async function handleSubscriptionCharged(payload) {
+  const payment        = payload.payment?.entity;
+  const subscription   = payload.subscription?.entity;
+  if (!payment || !subscription) return;
+
+  // Re-use the captured handler — it's the same flow
+  await handlePaymentCaptured({
+    ...payment,
+    notes: { billing: subscription.plan_id?.includes("yearly") ? "yearly" : "monthly" },
+  });
+}
+
+// ── Handle payment.failed ─────────────────────────────────────────────────────
+async function handlePaymentFailed(payment) {
+  // Log for visibility — no user action needed
+  await db.collection("paymentFailures").doc(payment.id).set({
+    paymentId:    payment.id,
+    email:        payment.email,
+    amount:       payment.amount,
+    errorCode:    payment.error_code,
+    errorDesc:    payment.error_description,
+    errorReason:  payment.error_reason,
+    createdAt:    Timestamp.now(),
+  });
+
+  console.log(`razorpayWebhook: payment failed — ${payment.id} (${payment.error_code}: ${payment.error_description})`);
 }
