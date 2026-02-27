@@ -1,0 +1,32 @@
+/* PageWrapper.css
+   File location: frontend/src/components/layout/PageWrapper.css */
+
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg, #0d0f12);
+}
+
+.page-wrapper__content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.page-wrapper__content--wide {
+  max-width: 1400px;
+}
+
+.page-wrapper__content--full {
+  max-width: 100%;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper__content {
+    padding: 20px 16px;
+  }
+}
