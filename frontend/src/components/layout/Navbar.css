@@ -355,3 +355,34 @@
   .navbar-chevron     { display: none; }
   .navbar-hamburger   { display: flex; }
 }
+
+/* ── Logo glitch animation ────────────────────────────────────────────────── */
+.navbar-logo-text {
+  position: relative;
+  display: inline-block;
+}
+
+.navbar-logo:hover .navbar-logo-text {
+  animation: glitch 0.4s ease;
+}
+
+@keyframes glitch {
+  0%   { clip-path: none; transform: none; }
+  10%  { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translate(-2px, 0); color: #00ffff; }
+  20%  { clip-path: none; transform: none; color: inherit; }
+  30%  { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translate(2px, 0); color: #ff00ff; }
+  40%  { clip-path: none; transform: none; color: inherit; }
+  100% { clip-path: none; transform: none; }
+}
+
+/* Enhanced active nav state */
+.navbar-link--active {
+  color: var(--color-accent) !important;
+  background: rgba(0,255,136,0.07) !important;
+}
+
+.navbar-link--active::after {
+  box-shadow: 0 0 8px rgba(0,255,136,0.6);
+  width: 100%;
+  transition: width 0.2s ease;
+}
