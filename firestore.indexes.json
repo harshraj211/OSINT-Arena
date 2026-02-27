@@ -1,303 +1,285 @@
 {
   "indexes": [
+
+    // ── Submissions ───────────────────────────────────────────────────────────
+
     {
       "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "challengeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "userId",      "order": "ASCENDING"  },
+        { "fieldPath": "challengeId", "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",   "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "challengeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "isCorrect",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "userId",      "order": "ASCENDING" },
+        { "fieldPath": "challengeId", "order": "ASCENDING" },
+        { "fieldPath": "isCorrect",   "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "challengeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "challengeId", "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",   "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isSuspicious",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "isSuspicious", "order": "ASCENDING"  },
+        { "fieldPath": "timestamp",    "order": "DESCENDING" }
+      ]
+    },
+
+    // ── Users / Leaderboard ───────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "elo", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "elo",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "weeklyElo", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "weeklyElo",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "monthlyElo", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "monthlyElo",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "elo", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "elo",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "lastLoginAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "lastLoginAt",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "isFlagged",   "order": "ASCENDING"  },
+        { "fieldPath": "lastLoginAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isFlagged",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "lastLoginAt",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "plan",      "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    // ── Challenges ────────────────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "challenges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive",   "order": "ASCENDING"  },
+        { "fieldPath": "difficulty", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "challenges",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isActive",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "difficulty",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "isActive",   "order": "ASCENDING"  },
+        { "fieldPath": "solveCount", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "challenges",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isActive",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "solveCount",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "isActive",     "order": "ASCENDING"  },
+        { "fieldPath": "difficulty",   "order": "ASCENDING"  },
+        { "fieldPath": "solveCount",   "order": "ASCENDING"  }
       ]
     },
     {
       "collectionGroup": "challenges",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "difficulty",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "solveCount",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "attemptCount",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "difficulty",   "order": "ASCENDING"  },
+        { "fieldPath": "isActive",     "order": "ASCENDING"  }
+      ]
+    },
+    {
+      "collectionGroup": "challenges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive",      "order": "ASCENDING"  },
+        { "fieldPath": "freeForAll",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",     "order": "DESCENDING" }
+      ]
+    },
+
+    // ── Contests ──────────────────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "contests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive",  "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "contests",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isActive",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "startTime",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "isActive",  "order": "ASCENDING"  },
+        { "fieldPath": "endTime",   "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "contests",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "isCompleted",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "endTime",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "finalized", "order": "ASCENDING" },
+        { "fieldPath": "endTime",   "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "contests",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "emailSentAt",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "startTime",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "isActive",    "order": "ASCENDING" },
+        { "fieldPath": "finalized",   "order": "ASCENDING" },
+        { "fieldPath": "endTime",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "emailSentAt", "order": "ASCENDING" },
+        { "fieldPath": "startTime",   "order": "ASCENDING" }
+      ]
+    },
+
+    // ── Contest Participants (subcollection) ──────────────────────────────────
+
+    {
+      "collectionGroup": "participants",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "score",      "order": "DESCENDING" },
+        { "fieldPath": "finishTime", "order": "ASCENDING"  }
+      ]
+    },
+
+    // ── Contest Submissions ───────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "contestSubmissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contestId", "order": "ASCENDING" },
+        { "fieldPath": "isCorrect", "order": "ASCENDING" },
+        { "fieldPath": "timeTaken", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "contestSubmissions",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "contestId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "isCorrect",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timeTaken",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "contestId", "order": "ASCENDING" },
+        { "fieldPath": "userId",    "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
       ]
     },
+
+    // ── Flags ─────────────────────────────────────────────────────────────────
+
     {
-      "collectionGroup": "contestSubmissions",
+      "collectionGroup": "flags",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "contestId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "timestamp",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "resolvedAt", "order": "ASCENDING"  },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "flags",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "resolvedAt",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "flags",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "status",    "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    // ── Payments ──────────────────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "payments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid",       "order": "ASCENDING"  },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+
+    // ── Admin Logs ────────────────────────────────────────────────────────────
+
+    {
+      "collectionGroup": "adminLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type",      "order": "ASCENDING"  },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId",    "order": "ASCENDING"  },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     }
+
   ],
+
   "fieldOverrides": []
 }

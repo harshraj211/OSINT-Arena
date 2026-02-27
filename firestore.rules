@@ -2,124 +2,128 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     function isAuth() {
       return request.auth != null;
     }
-
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
-
     function hasRole(role) {
       return isAuth() && request.auth.token.role == role;
     }
-
     function isAdmin() {
       return hasRole('admin');
     }
-
     function isModerator() {
-      return hasRole('moderator') || isAdmin();
+      return hasRole('mod') || isAdmin();
     }
-
     function isVerified() {
       return isAuth() && request.auth.token.email_verified == true;
     }
-
+    function isPro() {
+      return isAuth() && (request.auth.token.plan == 'pro' || isAdmin());
+    }
     function hasOnly(fields) {
       return request.resource.data.keys().hasOnly(fields);
     }
 
-    // ── Users ─────────────────────────────────────────────────────────────────
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if false;
-      allow update: if isOwner(userId)
-        && hasOnly(['username', 'avatarUrl'])
-        && isVerified();
+      allow update: if isOwner(userId) && isVerified()
+        && hasOnly(['username', 'displayName', 'photoURL']);
       allow delete: if false;
       allow write: if isAdmin();
     }
 
-    // ── Public Profiles ───────────────────────────────────────────────────────
     match /publicProfiles/{userId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // ── Challenges ────────────────────────────────────────────────────────────
     match /challenges/{challengeId} {
       allow read: if isVerified() && resource.data.isActive == true;
       allow read: if isAdmin();
       allow write: if isAdmin();
     }
 
-    // ── Submissions ───────────────────────────────────────────────────────────
     match /submissions/{submissionId} {
       allow read: if isAuth() && resource.data.userId == request.auth.uid;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
       allow read: if isModerator();
+      allow write: if false;
     }
 
-    // ── Active Sessions ───────────────────────────────────────────────────────
     match /activeSessions/{sessionId} {
       allow read: if isAuth()
         && sessionId.matches(request.auth.uid + '_.*');
       allow write: if false;
     }
 
-    // ── Heatmap ───────────────────────────────────────────────────────────────
     match /heatmap/{userId}/years/{year} {
-      allow read: if isOwner(userId);
-      allow read: if isAuth();
+      allow read: if isOwner(userId) || isAuth();
       allow write: if false;
     }
 
-    // ── Contests ──────────────────────────────────────────────────────────────
     match /contests/{contestId} {
       allow read: if isAuth();
       allow write: if isAdmin();
+
+      match /participants/{userId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false;
+
+        match /attempts/{challengeId} {
+          allow read: if isOwner(userId) || isAdmin();
+          allow write: if false;
+        }
+      }
     }
 
-    // ── Contest Submissions ───────────────────────────────────────────────────
     match /contestSubmissions/{submissionId} {
       allow read: if isAuth() && resource.data.userId == request.auth.uid;
       allow read: if isAdmin();
       allow write: if false;
     }
 
-    // ── Leaderboard ───────────────────────────────────────────────────────────
     match /leaderboard/{entry} {
       allow read: if true;
       allow write: if false;
     }
 
-    // ── Flags ─────────────────────────────────────────────────────────────────
     match /flags/{flagId} {
       allow read: if isModerator();
       allow create: if false;
       allow update: if isModerator()
-        && hasOnly(['reviewedBy', 'resolvedAt', 'notes']);
+        && hasOnly(['reviewedBy', 'resolvedAt', 'notes', 'status']);
       allow delete: if isAdmin();
     }
 
-    // ── Certifications ────────────────────────────────────────────────────────
     match /certifications/{certId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // ── Admin Audit Log ───────────────────────────────────────────────────────
+    match /payments/{paymentId} {
+      allow read: if isAuth() && resource.data.uid == request.auth.uid;
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /paymentFailures/{failureId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /config/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
     match /adminLogs/{logId} {
       allow read: if isAdmin();
       allow write: if false;
     }
 
-    // ── Deny everything else ──────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }

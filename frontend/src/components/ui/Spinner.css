@@ -1,0 +1,25 @@
+/**
+ * Spinner.css
+ * File location: frontend/src/components/ui/Spinner.css
+ */
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner__ring {
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--color-border) var(--color-border) var(--color-border) var(--color-accent);
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner--sm .spinner__ring { width: 16px; height: 16px; border-width: 2px; }
+.spinner--md .spinner__ring { width: 24px; height: 24px; border-width: 2px; }
+.spinner--lg .spinner__ring { width: 40px; height: 40px; border-width: 3px; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
