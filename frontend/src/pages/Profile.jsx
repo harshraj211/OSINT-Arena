@@ -397,7 +397,7 @@ function ProfileHeatmap({ data, tierColor }) {
           <span
             key={i}
             className="profile-heatmap-month"
-            style={{ gridColumn: m.weekIndex + 1 }}
+            style={{ left: `${m.weekIndex * 17}px` }}
           >
             {monthNames[m.month]}
           </span>
@@ -434,6 +434,7 @@ function ActivityTab({ solves }) {
       <div className="profile-empty">
         <span className="profile-empty-icon">◈</span>
         <p>No solves yet.</p>
+        <a href="/challenges" className="profile-empty-link">Start a challenge →</a>
       </div>
     );
   }
@@ -473,31 +474,30 @@ function ActivityTab({ solves }) {
 }
 
 function BadgesTab({ badges }) {
-  const BADGE_META = {
-    "speed_demon":   { icon: "⚡", label: "Speed Demon",   desc: "10 solves with 2× time bonus" },
-    "streak_master": { icon: "🔥", label: "Streak Master",  desc: "30-day solving streak" },
-    "first_blood":   { icon: "🩸", label: "First Blood",    desc: "First to solve a challenge" },
-    "centurion":     { icon: "💯", label: "Centurion",      desc: "100 challenges solved" },
-    "phantom":       { icon: "👻", label: "Phantom",        desc: "Reached Phantom tier" },
-  };
+  const ALL_BADGES = [
+    { type: "speed_demon",   icon: "⚡", label: "Speed Demon",   desc: "Solve 10 challenges with 2× time bonus" },
+    { type: "streak_master", icon: "🔥", label: "Streak Master",  desc: "Maintain a 30-day solving streak" },
+    { type: "first_blood",   icon: "🩸", label: "First Blood",    desc: "Be the first to solve a challenge" },
+    { type: "centurion",     icon: "💯", label: "Centurion",      desc: "Solve 100 challenges" },
+    { type: "phantom",       icon: "👻", label: "Phantom",        desc: "Reach Phantom tier (4000+ ELO)" },
+    { type: "analyst",       icon: "🔍", label: "Analyst",        desc: "Solve your first hard challenge" },
+    { type: "consistent",    icon: "📅", label: "Consistent",     desc: "Solve challenges 7 days in a row" },
+    { type: "elite",         icon: "⭐", label: "Elite",          desc: "Reach Elite tier (2000+ ELO)" },
+  ];
 
-  if (badges.length === 0) {
-    return (
-      <div className="profile-empty">
-        <span className="profile-empty-icon">⬡</span>
-        <p>No badges yet — keep solving!</p>
-      </div>
-    );
-  }
+  const earned = new Set(badges.map(b => b.type));
 
   return (
     <div className="profile-badges-grid">
-      {badges.map((badge) => {
-        const meta = BADGE_META[badge.type] || { icon: "★", label: badge.type, desc: "" };
+      {ALL_BADGES.map((badge) => {
+        const isEarned = earned.has(badge.type);
         return (
-          <div key={badge.id} className="profile-badge" title={meta.desc}>
-            <span className="profile-badge-icon">{meta.icon}</span>
-            <span className="profile-badge-label">{meta.label}</span>
+          <div key={badge.type}
+            className={`profile-badge ${isEarned ? "profile-badge--earned" : "profile-badge--locked"}`}
+            title={isEarned ? badge.desc : `Locked: ${badge.desc}`}>
+            <span className="profile-badge-icon">{badge.icon}</span>
+            <span className="profile-badge-label">{badge.label}</span>
+            {!isEarned && <span className="profile-badge-lock">🔒</span>}
           </div>
         );
       })}

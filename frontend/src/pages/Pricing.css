@@ -471,3 +471,11 @@
   .pricing-card--free { order: 2; }
   .pricing-card--pro  { order: 1; }
 }
+
+.pricing-cancel-note {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  margin-top: 8px;
+  font-style: italic;
+}

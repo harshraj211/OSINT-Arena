@@ -12,6 +12,7 @@ import {
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/layout/PageWrapper";
+import SocialPanel from "../components/social/SocialPanel";
 import "./Dashboard.css";
 
 // ── Count-up hook ─────────────────────────────────────────────────────────────
@@ -161,6 +162,17 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ── Welcome banner for new users ─────────────────────────────── */}
+        {totalSolved === 0 && (
+          <div className="dash-welcome-banner">
+            <div className="dash-welcome-text">
+              <span className="dash-welcome-title">👋 Welcome to OSINT Arena</span>
+              <span className="dash-welcome-sub">Start your first challenge to begin your intelligence journey and earn your first ELO points.</span>
+            </div>
+            <Link to="/challenges" className="dash-welcome-cta">Begin →</Link>
+          </div>
+        )}
+
         {/* ── Weekly free challenge hero ───────────────────────────────── */}
         {weeklyChallenge && !isPro && (
           <div className="dash-hero-challenge">
@@ -219,13 +231,7 @@ export default function Dashboard() {
           </div>
 
           <div className="dash-side">
-            <div className="dash-card">
-              <div className="dash-card-header">
-                <span className="dash-card-title">Activity</span>
-                <span className="dash-card-sub">Last 12 weeks</span>
-              </div>
-              <MiniHeatmap data={heatmapData} />
-            </div>
+            <SocialPanel />
 
             <div className="dash-card dash-elo-card">
               <div className="dash-card-header">

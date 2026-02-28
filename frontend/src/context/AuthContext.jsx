@@ -40,6 +40,23 @@ function getSetCustomClaimsFn() {
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
+// ── Ensure username is unique across all users ───────────────────────────────
+async function getUniqueUsername(baseUsername) {
+  const base = sanitizeUsername(baseUsername);
+  // Check if base is available
+  const q = query(collection(db, "users"), where("username", "==", base), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return base;
+  // Append numbers until unique
+  for (let i = 2; i <= 9999; i++) {
+    const candidate = `${base}_${i}`.slice(0, 20);
+    const q2 = query(collection(db, "users"), where("username", "==", candidate), limit(1));
+    const s2 = await getDocs(q2);
+    if (s2.empty) return candidate;
+  }
+  return `${base}_${Date.now()}`.slice(0, 20);
+}
+
 // ── Create Firestore profile if it doesn't exist ──────────────────────────────
 async function ensureUserProfile(user, extraData = {}) {
   const ref  = doc(db, "users", user.uid);
@@ -47,9 +64,9 @@ async function ensureUserProfile(user, extraData = {}) {
   if (snap.exists()) return snap.data();
 
   const provider = user.providerData?.[0]?.providerId || "password";
-  const username  = sanitizeUsername(
-    extraData.username || user.displayName || user.email?.split("@")[0] || user.uid.slice(0, 8)
-  );
+  const rawUsername = extraData.username || user.displayName || user.email?.split("@")[0] || user.uid.slice(0, 8);
+  // Ensure username is unique
+  const username = await getUniqueUsername(rawUsername);
 
   const profile = {
     uid:          user.uid,

@@ -34,7 +34,7 @@ const FREE_FEATURES = [
 ];
 
 const PRO_FEATURES = [
-  "All medium challenges (70% unlocked)",
+  "All medium challenges",
   "All hard challenges",
   "Weekly & monthly contests",
   "OSINT certifications",
@@ -243,6 +243,7 @@ export default function Pricing() {
               {PLANS[billing].saving && (
                 <span className="pricing-saving">{PLANS[billing].saving}</span>
               )}
+              <span className="pricing-cancel-note">Cancel anytime · No questions asked</span>
             </div>
 
             <ul className="pricing-features">

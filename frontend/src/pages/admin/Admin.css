@@ -784,3 +784,23 @@
   .admin-table-header,
   .admin-users-grid    { grid-template-columns: 1fr 80px 70px; }
 }
+
+/* ── Admin user list ─────────────────────────────────────────────────────────── */
+.admin-user-list { display: flex; flex-direction: column; gap: 2px; }
+
+.admin-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+.admin-user-row:hover { background: rgba(255,255,255,0.03); }
+
+.admin-user-rank  { font-family: var(--font-mono); color: var(--color-text-subtle); width: 28px; }
+.admin-user-name  { flex: 1; color: var(--color-text); font-weight: 500; }
+.admin-user-elo   { font-family: var(--font-mono); color: var(--color-accent); font-size: 12px; }
+.admin-user-meta  { color: var(--color-text-subtle); font-size: 11px; }
+.admin-user-date  { color: var(--color-text-subtle); font-size: 11px; margin-left: auto; }

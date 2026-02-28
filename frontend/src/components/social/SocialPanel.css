@@ -1,0 +1,208 @@
+/* SocialPanel.css
+   File location: frontend/src/components/social/SocialPanel.css */
+
+.social-panel {
+  background: #161b22;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.social-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+
+.social-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.social-panel-link {
+  font-size: 12px;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.social-panel-link:hover { text-decoration: underline; }
+
+/* ── Tabs ─────────────────────────────────────────────────────────── */
+.social-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-top: 12px;
+}
+
+.social-tab {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.social-tab:hover { color: var(--color-text); }
+
+.social-tab--active {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.social-tab--active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 6px rgba(0,255,136,0.5);
+  border-radius: 2px 2px 0 0;
+}
+
+.social-tab-count {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(0,255,136,0.1);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* ── List ─────────────────────────────────────────────────────────── */
+.social-list { padding: 8px 0 12px; }
+
+.social-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  transition: background 0.15s;
+}
+.social-row:hover { background: rgba(255,255,255,0.02); }
+
+.social-avatar-link { flex-shrink: 0; }
+
+.social-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e2936, #0d1117);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.social-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.social-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.social-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+}
+.social-username:hover { color: var(--color-accent); }
+
+.social-meta {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+}
+
+/* Follow button */
+.social-follow-btn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid rgba(0,255,136,0.3);
+  background: rgba(0,255,136,0.06);
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.social-follow-btn:hover {
+  background: rgba(0,255,136,0.14);
+  border-color: rgba(0,255,136,0.5);
+}
+
+.social-follow-btn--following {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--color-text-subtle);
+}
+.social-follow-btn--following:hover {
+  border-color: rgba(255,77,77,0.3);
+  background: rgba(255,77,77,0.06);
+  color: var(--color-hard);
+}
+
+.social-follow-btn--followback {
+  border-color: rgba(0,191,255,0.3);
+  background: rgba(0,191,255,0.06);
+  color: #00bfff;
+}
+.social-follow-btn--followback:hover {
+  background: rgba(0,191,255,0.14);
+}
+
+.social-follow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── States ───────────────────────────────────────────────────────── */
+.social-loading { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+.social-skeleton {
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: social-shimmer 1.5s infinite;
+}
+@keyframes social-shimmer { to { background-position: -200% 0; } }
+
+.social-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-subtle);
+}

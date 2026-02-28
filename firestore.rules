@@ -112,6 +112,35 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── Follows collection ──────────────────────────────────────────
+    // Document ID format: {followerId}_{followingId}
+    match /follows/{followId} {
+      // Anyone logged in can see who follows who (public social graph)
+      allow read: if isAuth();
+
+      // Only create your own follow — can't follow as someone else
+      allow create: if isAuth()
+                       && request.resource.data.followerId == request.auth.uid
+                       && request.resource.data.followingId != request.auth.uid
+                       && request.resource.data.keys().hasAll(['followerId', 'followingId', 'createdAt'])
+                       && request.resource.data.keys().hasOnly(['followerId', 'followingId', 'createdAt']);
+
+      // No updates allowed — follow is immutable
+      allow update: if false;
+
+      // Only the follower can unfollow (delete their own follow doc)
+      allow delete: if isAuth()
+                       && resource.data.followerId == request.auth.uid;
+    }
+
+    // ── Follow counters (denormalized for fast reads) ───────────────
+    // Stored under publicProfiles for performance
+    // Written only by Cloud Functions — not directly by clients
+    match /followCounts/{userId} {
+      allow read:  if isAuth();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

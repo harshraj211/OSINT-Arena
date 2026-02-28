@@ -44,17 +44,12 @@ export default function AdminFlags() {
     setError("");
     setSelectedFlag(null);
     try {
-      let q = query(
+      // Simple query without composite index — filter client-side
+      const q = query(
         collection(db, "flags"),
         orderBy("createdAt", "desc"),
-        limit(50)
+        limit(100)
       );
-      if (filter === "unresolved") {
-        q = query(q, where("resolved", "==", false));
-      } else if (filter === "resolved") {
-        q = query(q, where("resolved", "==", true));
-      }
-
       const snap = await getDocs(q);
       const items = [];
       for (const flagDoc of snap.docs) {
@@ -78,7 +73,11 @@ export default function AdminFlags() {
           reportedByUsername,
         });
       }
-      setFlags(items);
+      // Client-side filter by status
+      const filtered = filter === "all" ? items
+        : filter === "unresolved" ? items.filter(f => !f.resolved)
+        : items.filter(f => f.resolved);
+      setFlags(filtered);
     } catch (err) {
       setError(err.message || "Failed to load flags.");
     } finally {

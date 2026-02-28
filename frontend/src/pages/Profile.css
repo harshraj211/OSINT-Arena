@@ -285,17 +285,17 @@
 .profile-heatmap-wrap { overflow-x: auto; }
 
 .profile-heatmap-months {
-  display: grid;
-  grid-template-columns: repeat(26, 14px);
-  gap: 3px;
+  display: flex;
+  position: relative;
+  height: 16px;
   margin-bottom: 4px;
-  padding-left: 0;
 }
 
 .profile-heatmap-month {
   font-size: 10px;
   color: var(--color-text-subtle);
   white-space: nowrap;
+  position: absolute;
 }
 
 .profile-heatmap {
@@ -599,4 +599,50 @@
   .profile-elo-value { font-size: 32px; }
   .profile-username { font-size: 22px; }
   .profile-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Locked badges ───────────────────────────────────────────────────────────── */
+.profile-badge--earned {
+  border-color: rgba(0,255,136,0.15);
+}
+
+.profile-badge--locked {
+  opacity: 0.35;
+  filter: grayscale(0.8);
+  cursor: default;
+}
+
+.profile-badge--locked:hover {
+  transform: none;
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: none;
+}
+
+.profile-badge-lock {
+  font-size: 10px;
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  opacity: 0.6;
+}
+
+.profile-badge {
+  position: relative; /* needed for lock icon */
+}
+
+/* ── Empty state link ────────────────────────────────────────────────────────── */
+.profile-empty-link {
+  color: var(--color-accent);
+  font-size: 13px;
+  text-decoration: none;
+  margin-top: 4px;
+}
+.profile-empty-link:hover { text-decoration: underline; }
+
+/* ── Cancel note on pricing ─────────────────────────────────────────────────── */
+.pricing-cancel-note {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  margin-top: 6px;
 }

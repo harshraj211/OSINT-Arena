@@ -1,23 +1,21 @@
 /**
- * AdminDashboard.jsx
- * Main admin overview. Calls getAnalytics Cloud Function.
- * Shows: user stats, challenge stats, submission stats, ELO histogram, flags.
- *
+ * AdminDashboard.jsx — v3
+ * Uses only single-field queries — zero composite indexes needed.
  * File location: frontend/src/pages/admin/AdminDashboard.jsx
  */
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import {
+  collection, query, orderBy, limit,
+  getDocs, getCountFromServer,
+} from "firebase/firestore";
+import { db } from "../../firebase/config";
 import "./Admin.css";
 
-const functions = getFunctions();
-const getAnalyticsFn = httpsCallable(functions, "getAnalytics");
-
 export default function AdminDashboard() {
-  const [data, setData]       = useState(null);
+  const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState("");
+  const [error,   setError]   = useState("");
   const [lastRefresh, setLastRefresh] = useState(null);
 
   useEffect(() => { loadAnalytics(); }, []);
@@ -26,10 +24,71 @@ export default function AdminDashboard() {
     setLoading(true);
     setError("");
     try {
-      const res = await getAnalyticsFn();
-      setData(res.data);
+      const usersRef = collection(db, "users");
+      const subRef   = collection(db, "submissions");
+      const chalRef  = collection(db, "challenges");
+      const flagsRef = collection(db, "flags");
+
+      // Only simple single-field queries — no composite indexes needed
+      const [
+        totalUsersSnap,
+        totalSubsSnap,
+        totalChalSnap,
+        recentUsersSnap,
+        topUsersSnap,
+        recentSubsSnap,
+        allFlagsSnap,
+      ] = await Promise.all([
+        getCountFromServer(usersRef),
+        getCountFromServer(subRef),
+        getCountFromServer(chalRef),
+        getDocs(query(usersRef, orderBy("createdAt", "desc"), limit(5))),
+        getDocs(query(usersRef, orderBy("elo",       "desc"), limit(5))),
+        getDocs(query(subRef,   orderBy("timestamp", "desc"), limit(50))),
+        getDocs(query(flagsRef, orderBy("createdAt", "desc"), limit(100))),
+      ]);
+
+      // Compute stats client-side from recent docs
+      const now       = Date.now();
+      const oneDayMs  = 86400000;
+      const oneWeekMs = 7 * oneDayMs;
+
+      const recentSubs = recentSubsSnap.docs.map(d => d.data());
+      const todaySubs  = recentSubs.filter(s => s.timestamp?.toMillis?.() > now - oneDayMs);
+      const correctToday = todaySubs.filter(s => s.isCorrect).length;
+      const totalToday   = todaySubs.length;
+
+      const recentUsers = recentUsersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const newThisWeek = recentUsers.filter(u =>
+        u.createdAt?.toMillis?.() > now - oneWeekMs
+      ).length;
+
+      const allFlags = allFlagsSnap.docs.map(d => d.data());
+      const openFlags = allFlags.filter(f => !f.resolved).length;
+
+      setData({
+        users: {
+          total:       totalUsersSnap.data().count,
+          newThisWeek,
+          recentUsers,
+          topUsers: topUsersSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        },
+        submissions: {
+          total:         totalSubsSnap.data().count,
+          totalToday,
+          correctToday,
+          accuracyToday: totalToday > 0 ? Math.round((correctToday / totalToday) * 100) : 0,
+        },
+        challenges: {
+          total: totalChalSnap.data().count,
+        },
+        flags: {
+          totalUnresolved: openFlags,
+        },
+      });
       setLastRefresh(new Date());
     } catch (err) {
+      console.error(err);
       setError(err.message || "Failed to load analytics.");
     } finally {
       setLoading(false);
@@ -40,27 +99,20 @@ export default function AdminDashboard() {
   if (error)   return <AdminError error={error} onRetry={loadAnalytics} />;
   if (!data)   return null;
 
-  const { users, challenges, submissions, elo, flags } = data;
+  const { users, challenges, submissions, flags } = data;
 
   return (
     <div className="admin-page">
-
-      {/* ── Page header ─────────────────────────────────────────────── */}
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Dashboard</h1>
           {lastRefresh && (
-            <p className="admin-page-sub">
-              Last updated {lastRefresh.toLocaleTimeString()}
-            </p>
+            <p className="admin-page-sub">Last updated {lastRefresh.toLocaleTimeString()}</p>
           )}
         </div>
-        <button className="admin-refresh-btn" onClick={loadAnalytics}>
-          ↻ Refresh
-        </button>
+        <button className="admin-refresh-btn" onClick={loadAnalytics}>↻ Refresh</button>
       </div>
 
-      {/* ── Flags alert ─────────────────────────────────────────────── */}
       {flags?.totalUnresolved > 0 && (
         <Link to="/admin/flags" className="admin-flags-alert">
           <span className="admin-flags-alert-icon">⚑</span>
@@ -69,105 +121,66 @@ export default function AdminDashboard() {
         </Link>
       )}
 
-      {/* ── User stats ──────────────────────────────────────────────── */}
       <section className="admin-section">
-        <h2 className="admin-section-title">Users</h2>
+        <h2 className="admin-section-title">Overview</h2>
         <div className="admin-stats-grid admin-stats-grid--5">
-          <AdminStat label="Total"        value={users?.total?.toLocaleString()}         />
-          <AdminStat label="Active Today" value={users?.activeToday?.toLocaleString()}    accent="blue" />
-          <AdminStat label="This Week"    value={users?.activeThisWeek?.toLocaleString()} />
-          <AdminStat label="This Month"   value={users?.activeThisMonth?.toLocaleString()} />
-          <AdminStat label="New This Week" value={`+${users?.newThisWeek?.toLocaleString()}`} accent="accent" />
+          <AdminStat label="Total Users"      value={users?.total?.toLocaleString()} />
+          <AdminStat label="New This Week"    value={`+${users?.newThisWeek ?? 0}`} accent="accent" />
+          <AdminStat label="Total Challenges" value={challenges?.total?.toLocaleString()} />
+          <AdminStat label="Total Submissions" value={submissions?.total?.toLocaleString()} />
+          <AdminStat label="Open Flags"       value={flags?.totalUnresolved ?? 0}
+            accent={flags?.totalUnresolved > 0 ? "warning" : ""} />
         </div>
       </section>
 
-      {/* ── Submission stats ─────────────────────────────────────────── */}
       <section className="admin-section">
-        <h2 className="admin-section-title">Today's Submissions</h2>
+        <h2 className="admin-section-title">Today's Activity</h2>
         <div className="admin-stats-grid admin-stats-grid--3">
-          <AdminStat label="Total"    value={submissions?.totalToday?.toLocaleString()} />
-          <AdminStat label="Correct"  value={submissions?.correctToday?.toLocaleString()} accent="accent" />
-          <AdminStat
-            label="Accuracy"
-            value={`${submissions?.accuracyToday ?? 0}%`}
-            accent={submissions?.accuracyToday >= 50 ? "accent" : "warning"}
-          />
+          <AdminStat label="Submissions"  value={submissions?.totalToday} />
+          <AdminStat label="Correct"      value={submissions?.correctToday} accent="accent" />
+          <AdminStat label="Accuracy"     value={`${submissions?.accuracyToday ?? 0}%`}
+            accent={submissions?.accuracyToday >= 50 ? "accent" : "warning"} />
         </div>
       </section>
 
-      {/* ── Challenges + ELO ────────────────────────────────────────── */}
       <div className="admin-two-col">
-
-        {/* Challenge stats */}
         <section className="admin-card">
-          <h2 className="admin-card-title">Challenges</h2>
-          <div className="admin-kv-list">
-            <AdminKV label="Total Active"    value={challenges?.total} />
-            <AdminKV label="Most Solved"     value={challenges?.mostSolved?.title || "—"} mono={false} />
-            <AdminKV label="Hardest"         value={challenges?.hardest?.title || "—"} mono={false} />
-          </div>
-
-          {challenges?.avgSolveTime && (
-            <>
-              <div className="admin-divider" />
-              <h3 className="admin-subsection-title">Avg Solve Time</h3>
-              <div className="admin-kv-list">
-                {Object.entries(challenges.avgSolveTime).map(([diff, secs]) => (
-                  <AdminKV
-                    key={diff}
-                    label={diff.charAt(0).toUpperCase() + diff.slice(1)}
-                    value={formatTime(secs)}
-                    color={DIFF_COLORS[diff]}
-                  />
-                ))}
+          <h2 className="admin-card-title">Top Analysts by ELO</h2>
+          <div className="admin-user-list">
+            {users?.topUsers?.map((u, i) => (
+              <div key={u.id} className="admin-user-row">
+                <span className="admin-user-rank">#{i + 1}</span>
+                <span className="admin-user-name">{u.username || u.email}</span>
+                <span className="admin-user-elo">{u.elo ?? 500} ELO</span>
               </div>
-            </>
-          )}
+            ))}
+          </div>
         </section>
 
-        {/* ELO histogram */}
         <section className="admin-card">
-          <h2 className="admin-card-title">ELO Distribution (Top 500)</h2>
-          {elo?.histogram ? (
-            <EloHistogram histogram={elo.histogram} />
-          ) : (
-            <p className="admin-empty-note">No ELO data.</p>
-          )}
+          <h2 className="admin-card-title">Recently Joined</h2>
+          <div className="admin-user-list">
+            {users?.recentUsers?.map(u => (
+              <div key={u.id} className="admin-user-row">
+                <span className="admin-user-name">{u.username || u.email}</span>
+                <span className="admin-user-meta">{u.provider || "email"}</span>
+                <span className="admin-user-date">
+                  {u.createdAt?.toDate?.()?.toLocaleDateString() || "—"}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
 
-      {/* ── Quick actions ────────────────────────────────────────────── */}
       <section className="admin-section">
         <h2 className="admin-section-title">Quick Actions</h2>
         <div className="admin-quick-actions">
           <Link to="/admin/users"      className="admin-quick-btn">Manage Users →</Link>
           <Link to="/admin/flags"      className="admin-quick-btn">Review Flags →</Link>
           <Link to="/admin/challenges" className="admin-quick-btn">Manage Challenges →</Link>
-          <Link to="/admin/contests"   className="admin-quick-btn">Manage Contests →</Link>
         </div>
       </section>
-
-    </div>
-  );
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function EloHistogram({ histogram }) {
-  const entries = Object.entries(histogram).sort((a, b) => Number(a[0]) - Number(b[0]));
-  const maxVal  = Math.max(...entries.map(([, v]) => v), 1);
-
-  return (
-    <div className="admin-histogram">
-      {entries.map(([bucket, count]) => (
-        <div key={bucket} className="admin-histogram-col" title={`${bucket}–${Number(bucket)+99}: ${count} users`}>
-          <div
-            className="admin-histogram-bar"
-            style={{ height: `${(count / maxVal) * 100}%` }}
-          />
-          <span className="admin-histogram-label">{bucket}</span>
-        </div>
-      ))}
     </div>
   );
 }
@@ -177,20 +190,6 @@ function AdminStat({ label, value, accent }) {
     <div className={`admin-stat-card ${accent ? `admin-stat-card--${accent}` : ""}`}>
       <div className="admin-stat-value">{value ?? "—"}</div>
       <div className="admin-stat-label">{label}</div>
-    </div>
-  );
-}
-
-function AdminKV({ label, value, mono = true, color }) {
-  return (
-    <div className="admin-kv-row">
-      <span className="admin-kv-label">{label}</span>
-      <span
-        className={`admin-kv-value ${mono ? "admin-kv-value--mono" : ""}`}
-        style={color ? { color } : {}}
-      >
-        {value ?? "—"}
-      </span>
     </div>
   );
 }
@@ -209,22 +208,7 @@ export function AdminError({ error, onRetry }) {
     <div className="admin-error-state">
       <span className="admin-error-icon">⚠</span>
       <p>{error}</p>
-      {onRetry && (
-        <button className="admin-retry-btn" onClick={onRetry}>Try again</button>
-      )}
+      {onRetry && <button className="admin-retry-btn" onClick={onRetry}>Try again</button>}
     </div>
   );
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function formatTime(s) {
-  if (!s) return "—";
-  const m = Math.floor(s / 60);
-  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
-}
-
-const DIFF_COLORS = {
-  easy:   "var(--color-easy)",
-  medium: "var(--color-medium)",
-  hard:   "var(--color-hard)",
-};

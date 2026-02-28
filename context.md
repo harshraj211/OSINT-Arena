@@ -1,6 +1,6 @@
 # Context — OSINT Arena
 
-Date: 2026-02-27
+Date: 2026-02-28
 
 > **Note:** This file is now added to `.gitignore` so that local developer context isn’t committed to the repository.
 
