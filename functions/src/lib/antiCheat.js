@@ -107,10 +107,10 @@ function validateTimeTaken(timeTaken) {
  * @param {string} ip
  * @returns {boolean}
  */
-function isValidIp(ip) {
-  if (!ip || typeof ip !== "string") return false;
+function isValidIp(_ip) {
+  if (!_ip || typeof _ip !== "string") return false;
   // Accepts IPv4 and IPv6
-  return /^[\d.:a-fA-F]+$/.test(ip) && ip.length <= 45;
+  return /^[\d.:a-fA-F]+$/.test(_ip) && _ip.length <= 45;
 }
 
 /**

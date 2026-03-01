@@ -53,13 +53,22 @@ export default function SocialPanel() {
 
   async function fetchProfiles(uids) {
     if (!uids.length) return [];
-    const out = [];
-    for (let i = 0; i < uids.length; i += 10) {
-      const q    = query(collection(db, "publicProfiles"), where("uid", "in", uids.slice(i, i + 10)));
-      const snap = await getDocs(q);
-      snap.docs.forEach(d => out.push({ uid: d.id, ...d.data() }));
-    }
-    return out;
+    // Fetch each profile doc directly by its ID (doc ID = uid)
+    const { getDoc, doc: firestoreDoc } = await import("firebase/firestore");
+    const results = await Promise.all(
+      uids.map(async uid => {
+        try {
+          // Try publicProfiles first
+          const snap = await getDoc(firestoreDoc(db, "publicProfiles", uid));
+          if (snap.exists()) return { uid, ...snap.data() };
+          // Fallback to users collection
+          const snap2 = await getDoc(firestoreDoc(db, "users", uid));
+          if (snap2.exists()) return { uid, ...snap2.data() };
+          return null;
+        } catch { return null; }
+      })
+    );
+    return results.filter(Boolean);
   }
 
   async function handleFollow(uid) {
@@ -115,15 +124,15 @@ export default function SocialPanel() {
               <div key={user.uid} className="social-row">
                 <Link to={`/profile/${user.username}`} className="social-avatar-link">
                   <div className="social-avatar">
-                    {user.photoURL
+                    {user.photoURL && !user.photoURL.startsWith("preset:")
                       ? <img src={user.photoURL} alt={user.username} />
                       : <span>{(user.username||"?").charAt(0).toUpperCase()}</span>
                     }
                   </div>
                 </Link>
                 <div className="social-info">
-                  <Link to={`/profile/${user.username}`} className="social-username">{user.username}</Link>
-                  <span className="social-meta">{user.elo??500} ELO · {user.totalSolved??0} solved</span>
+                  <Link to={`/profile/${user.username}`} className="social-username">{user.username || "unknown"}</Link>
+                  <span className="social-meta">{user.elo??0} ELO · {user.totalSolved??0} solved</span>
                 </div>
                 <button
                   className={`social-follow-btn${isFollowing?" social-follow-btn--following":isFollowBack?" social-follow-btn--followback":""}`}

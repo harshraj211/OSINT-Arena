@@ -24,7 +24,7 @@ const BATCH_SIZE = 400;
 module.exports = functions.pubsub
   .schedule("every monday 00:00")
   .timeZone("UTC")
-  .onRun(async (context) => {
+  .onRun(async (_context) => {
     console.log("resetWeeklyElo: starting weekly reset");
     const startTime = Date.now();
 

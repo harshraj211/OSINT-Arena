@@ -10,6 +10,7 @@
   max-width: 860px;
   margin: 0 auto;
   width: 100%;
+  min-height: calc(100vh - 130px);
   animation: fadeUp 0.3s ease both;
 }
 @keyframes fadeUp {
@@ -39,7 +40,7 @@
   align-items: center;
   gap: 16px;
   background: var(--color-accent-glow);
-  border: 1px solid rgba(0,255,136,0.25);
+  border: 1px solid var(--color-accent-bg);
   border-radius: var(--radius-md);
   padding: 14px 20px;
   font-family: var(--font-mono);
@@ -152,7 +153,7 @@
 
 /* My row */
 .lb-row--me {
-  border-color: rgba(0, 255, 136, 0.3) !important;
+  border-color: var(--color-accent-bg) !important;
   background: var(--color-accent-glow) !important;
 }
 
@@ -187,7 +188,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 700;
-  color: #0D0F12;
+  color: var(--color-bg);
   flex-shrink: 0;
 }
 .lb-user-info {
@@ -216,7 +217,7 @@
 .lb-you-badge {
   font-size: 9px;
   font-weight: 700;
-  color: #0D0F12;
+  color: var(--color-bg);
   background: var(--color-accent);
   border-radius: 3px;
   padding: 1px 4px;

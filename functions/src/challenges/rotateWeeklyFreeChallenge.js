@@ -28,7 +28,7 @@
 "use strict";
 
 const { onSchedule }  = require("firebase-functions/v2/scheduler");
-const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 
 const db = getFirestore();
 

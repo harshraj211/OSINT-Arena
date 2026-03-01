@@ -24,7 +24,7 @@ const BATCH_SIZE = 400;
 module.exports = functions.pubsub
   .schedule("0 0 1 * *")
   .timeZone("UTC")
-  .onRun(async (context) => {
+  .onRun(async (_context) => {
     console.log("resetMonthlyElo: starting monthly reset");
     const startTime = Date.now();
 

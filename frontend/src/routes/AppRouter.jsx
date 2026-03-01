@@ -19,6 +19,7 @@ const Dashboard        = lazy(() => import("../pages/Dashboard"));
 const Challenges       = lazy(() => import("../pages/Challenges"));
 const ChallengeSolve   = lazy(() => import("../pages/ChallengeSolve"));
 const Profile          = lazy(() => import("../pages/Profile"));
+const EditProfile      = lazy(() => import("../pages/EditProfile"));
 const Leaderboard      = lazy(() => import("../pages/Leaderboard"));
 const Contests         = lazy(() => import("../pages/Contests"));
 const ContestSolve     = lazy(() => import("../pages/ContestSolve"));
@@ -64,6 +65,7 @@ export default function AppRouter() {
           <Route path="/challenges"     element={<PrivateRoute><Challenges /></PrivateRoute>} />
           <Route path="/challenges/:slug" element={<PrivateRoute><ChallengeSolve /></PrivateRoute>} />
           <Route path="/profile"        element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/profile/edit"   element={<PrivateRoute><EditProfile /></PrivateRoute>} />
           <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/leaderboard"    element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
 

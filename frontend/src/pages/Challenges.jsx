@@ -261,122 +261,81 @@ export default function Challenges() {
           ))}
         </div>
 
-        {/* ── Challenge table ──────────────────────────────────────────── */}
+        {/* ── Card Grid ──────────────────────────────────────────────── */}
         {loading ? (
           <div className="challenges-skeleton">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="challenges-skeleton-row" style={{ animationDelay: `${i * 0.05}s` }} />
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="challenges-skeleton-row" />
             ))}
           </div>
         ) : filteredChallenges.length === 0 ? (
           <div className="challenges-empty">
             <span className="challenges-empty-icon">◈</span>
             <p>No challenges found.</p>
-            {search && (
-              <button className="challenges-empty-clear" onClick={() => setSearch("")}>
-                Clear search
-              </button>
-            )}
+            {search && <button className="challenges-empty-clear" onClick={() => setSearch("")}>Clear search</button>}
           </div>
         ) : (
           <>
-            <div className="challenges-table">
-              {/* Header */}
-              <div className="challenges-table-header">
-                <span className="challenges-col-status" />
-                <span className="challenges-col-title">Title</span>
-                <span className="challenges-col-diff">Difficulty</span>
-                <span className="challenges-col-elo">ELO</span>
-                <span className="challenges-col-solvers">Solvers</span>
-                <span className="challenges-col-time">Exp. Time</span>
-              </div>
-
-              {/* Rows */}
+            <div className="challenges-grid">
               {filteredChallenges.map((challenge, idx) => {
                 const solved  = solvedIds.has(challenge.id);
                 const locked  = isChallengeLocked(challenge, isPro, weeklyFreeHardId);
-                const diff    = DIFF_CONFIG[challenge.difficulty] || DIFF_CONFIG.easy;
-                const isWeeklyFree = challenge.id === weeklyFreeHardId && challenge.difficulty === "hard";
+                const isWeeklyFree = challenge.id === weeklyFreeHardId;
+                const diff    = challenge.difficulty || "easy";
 
                 return (
-                  <div
-                    key={challenge.id}
-                    className={[
-                      "challenges-row",
-                      solved  ? "challenges-row--solved"  : "",
-                      locked  ? "challenges-row--locked"  : "",
-                    ].filter(Boolean).join(" ")}
+                  <div key={challenge.id}
+                    className={["challenge-card", `challenge-card--${diff}`,
+                      solved ? "challenge-card--solved" : "",
+                      locked ? "challenge-card--locked" : ""].filter(Boolean).join(" ")}
+                    style={{ "--card-i": idx }}
                     onClick={() => locked
                       ? navigate("/pricing", { state: { reason: "pro_required" } })
                       : navigate(`/challenges/${challenge.slug}`)
                     }
-                    style={{ animationDelay: `${idx * 0.03}s` }}
                   >
-                    {/* Solved / locked status */}
-                    <span className="challenges-col-status">
-                      {locked ? (
-                        <span className="challenges-lock-icon">⚿</span>
-                      ) : solved ? (
-                        <span className="challenges-solved-check">✓</span>
-                      ) : (
-                        <span className="challenges-unsolved-dot" />
-                      )}
-                    </span>
+                    {/* Top row: status + chips */}
+                    <div className="challenge-card-top">
+                      <div className="challenge-card-chips">
+                        <span className={`ch-diff-chip ch-diff-chip--${diff}`}>{diff}</span>
+                        {isWeeklyFree && <span className="ch-free-badge">FREE WEEK</span>}
+                        {locked && <span className="ch-pro-badge">PRO</span>}
+                        {solved && <span className="ch-solved-badge">✓ Solved</span>}
+                      </div>
+                      <div className={`ch-status-icon ${locked ? "ch-status-icon--locked" : solved ? "ch-status-icon--solved" : "ch-status-icon--unsolved"}`}>
+                        {locked ? "⚿" : solved ? "✓" : ""}
+                      </div>
+                    </div>
 
                     {/* Title */}
-                    <span className="challenges-col-title">
-                      <span className={`challenges-row-title ${locked ? "challenges-row-title--blur" : ""}`}>
-                        {challenge.title}
-                      </span>
-                      {solved && !locked && (
-                        <span className="challenges-solved-label">Solved</span>
-                      )}
-                      {isWeeklyFree && (
-                        <span className="challenges-weekly-free-chip">Free this week</span>
-                      )}
-                      {locked && (
-                        <span className="challenges-pro-chip">PRO</span>
-                      )}
-                    </span>
+                    <div className={`challenge-card-title ${locked ? "challenge-card-title--blur" : ""}`}>
+                      {challenge.title}
+                    </div>
 
-                    {/* Difficulty */}
-                    <span className="challenges-col-diff">
-                      <span
-                        className="challenges-diff-chip"
-                        style={{ color: diff.color, background: diff.bg }}
-                      >
-                        {diff.label}
-                      </span>
-                    </span>
+                    {/* Tags */}
+                    {challenge.tags?.length > 0 && (
+                      <div className="challenge-card-tags">
+                        {challenge.tags.slice(0, 4).map(t => (
+                          <span key={t} className="ch-tag">{t}</span>
+                        ))}
+                      </div>
+                    )}
 
-                    {/* ELO */}
-                    <span className="challenges-col-elo">
-                      <span className="challenges-elo-value">+{challenge.basePoints}</span>
-                    </span>
-
-                    {/* Solvers */}
-                    <span className="challenges-col-solvers challenges-muted">
-                      {(challenge.solveCount || 0).toLocaleString()}
-                    </span>
-
-                    {/* Expected time */}
-                    <span className="challenges-col-time challenges-muted">
-                      {formatTime(challenge.expectedTime)}
-                    </span>
+                    {/* Footer */}
+                    <div className="challenge-card-footer">
+                      <span className="ch-pts">+{challenge.basePoints} pts</span>
+                      <span className="ch-solvers">{(challenge.solveCount || 0).toLocaleString()} solvers</span>
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Load more */}
             {hasMore && (
               <div className="challenges-load-more">
-                <button
-                  className="challenges-load-more-btn"
-                  onClick={() => loadChallenges(false)}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? "Loading..." : "Load more"}
+                <button className="challenges-load-more-btn"
+                  onClick={() => loadChallenges(false)} disabled={loadingMore}>
+                  {loadingMore ? "Loading..." : "Load more challenges"}
                 </button>
               </div>
             )}

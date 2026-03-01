@@ -28,19 +28,9 @@
 
 const { onSchedule }      = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
-const { calculateElo }    = require("../lib/calculateElo");
 
 const db = getFirestore();
 
-const ELO_AWARDS = [
-  { minRank: 1,    maxRank: 1,    base: 150 },
-  { minRank: 2,    maxRank: 2,    base: 100 },
-  { minRank: 3,    maxRank: 3,    base: 75  },
-  { minRank: null, maxRank: null, pct: 0.10, base: 50 }, // top 10%
-  { minRank: null, maxRank: null, pct: 0.25, base: 30 }, // top 25%
-  { minRank: null, maxRank: null, pct: 0.50, base: 15 }, // top 50%
-  { minRank: null, maxRank: null, pct: 1.00, base: 5  }, // participated (>0 solves)
-];
 
 const DIFFICULTY_MULT = {
   easy:   1.0,

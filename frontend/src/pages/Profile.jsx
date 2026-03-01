@@ -10,15 +10,23 @@
  */
 
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   collection, query, where, orderBy,
-  limit, getDocs, doc, getDoc
+  limit, getDocs, doc, getDoc,
+  setDoc, deleteDoc, serverTimestamp
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import PageWrapper from "../components/layout/PageWrapper";
 import "./Profile.css";
+
+// Preset avatar emoji map (matches EditProfile.jsx)
+const PRESET_MAP = {
+  spy: "🕵️", ghost: "👻", wolf: "🐺", robot: "🤖",
+  alien: "👽", ninja: "🥷", dragon: "🐉", falcon: "🦅",
+  owl: "🦉", shark: "🦈", fox: "🦊", panther: "🐆",
+};
 
 const ELO_TIERS = [
   { name: "Recruit",  min: 0,    max: 199,    color: "#8B949E" },
@@ -50,6 +58,8 @@ export default function Profile() {
   const [activeTab, setActiveTab]     = useState("activity");
 
   const isOwnProfile = !usernameParam || (ownProfile?.username === usernameParam);
+  const [isFollowing, setIsFollowing]   = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     if (isOwnProfile && ownProfile) {
@@ -61,9 +71,48 @@ export default function Profile() {
     }
   }, [usernameParam, ownProfile, isOwnProfile]);
 
+  // Check follow status when viewing another user
+  useEffect(() => {
+    if (!isOwnProfile && userId && currentUser) {
+      checkFollowStatus(userId);
+    }
+  }, [userId, isOwnProfile]);
+
+  async function checkFollowStatus(targetUid) {
+    try {
+      const followId = `${currentUser.uid}_${targetUid}`;
+      const snap = await getDoc(doc(db, "follows", followId));
+      setIsFollowing(snap.exists());
+    } catch {}
+  }
+
+  async function handleFollow() {
+    if (!userId) return;
+    setFollowLoading(true);
+    try {
+      const followId = `${currentUser.uid}_${userId}`;
+      if (isFollowing) {
+        await deleteDoc(doc(db, "follows", followId));
+        setIsFollowing(false);
+      } else {
+        await setDoc(doc(db, "follows", followId), {
+          followerId:  currentUser.uid,
+          followingId: userId,
+          createdAt:   serverTimestamp(),
+        });
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error("follow error:", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  }
+
   async function loadByUsername(username) {
     setLoading(true);
     try {
+      // First try publicProfiles
       const q = query(
         collection(db, "publicProfiles"),
         where("username", "==", username),
@@ -71,14 +120,39 @@ export default function Profile() {
       );
       const snap = await getDocs(q);
       if (snap.empty) {
-        setNotFound(true);
-        setLoading(false);
+        // Fallback: try users collection directly
+        const q2 = query(
+          collection(db, "users"),
+          where("username", "==", username),
+          limit(1)
+        );
+        const snap2 = await getDocs(q2);
+        if (snap2.empty) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+        const d2 = snap2.docs[0];
+        setProfile({ uid: d2.id, ...d2.data() });
+        setUserId(d2.id);
+        loadProfileData(d2.id);
         return;
       }
       const docSnap = snap.docs[0];
-      setProfile(docSnap.data());
-      setUserId(docSnap.id);
-      loadProfileData(docSnap.id);
+      const uid = docSnap.id;
+      // Also fetch full user doc to get badges, streak, accuracy etc.
+      try {
+        const userSnap = await getDoc(doc(db, "users", uid));
+        if (userSnap.exists()) {
+          setProfile({ uid, ...userSnap.data(), ...docSnap.data() });
+        } else {
+          setProfile({ uid, ...docSnap.data() });
+        }
+      } catch {
+        setProfile({ uid, ...docSnap.data() });
+      }
+      setUserId(uid);
+      loadProfileData(uid);
     } catch (err) {
       console.error("loadByUsername:", err);
       setLoading(false);
@@ -202,11 +276,23 @@ export default function Profile() {
           <div className="profile-hero-content">
             {/* Avatar */}
             <div className="profile-avatar-wrap">
-              <img
-                src={`https://ui-avatars.com/api/?name=${profile.username?.charAt(0).toUpperCase()}&background=${tier.color.replace("#","")}&color=0D0F12&size=80&bold=true`}
-                alt={profile.username}
-                className="profile-avatar"
-              />
+              {profile.photoURL && !profile.photoURL.startsWith("preset:") ? (
+                <img
+                  src={profile.photoURL}
+                  alt={profile.username}
+                  className="profile-avatar profile-avatar--photo"
+                />
+              ) : profile.photoURL?.startsWith("preset:") ? (
+                <div className="profile-avatar profile-avatar--preset"
+                  style={{ borderColor: tier.color }}>
+                  {PRESET_MAP[profile.photoURL.replace("preset:", "")] || "🕵️"}
+                </div>
+              ) : (
+                <div className="profile-avatar profile-avatar--initial"
+                  style={{ background: tier.color }}>
+                  {(profile.username || "?").charAt(0).toUpperCase()}
+                </div>
+              )}
               <div
                 className="profile-avatar-ring"
                 style={{ borderColor: tier.color }}
@@ -223,6 +309,18 @@ export default function Profile() {
                 {isOwnProfile && (
                   <span className="profile-own-badge">You</span>
                 )}
+                {isOwnProfile && (
+                  <Link to="/profile/edit" className="profile-edit-btn">✎ Edit Profile</Link>
+                )}
+                {!isOwnProfile && (
+                  <button
+                    className={`profile-follow-btn ${isFollowing ? "profile-follow-btn--following" : ""}`}
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                  >
+                    {followLoading ? "..." : isFollowing ? "✓ Following" : "+ Follow"}
+                  </button>
+                )}
               </div>
               <div
                 className="profile-tier-label"
@@ -232,7 +330,10 @@ export default function Profile() {
               </div>
               <div className="profile-join-date">
                 Analyst since {joinedDate}
+                {profile.university && <span className="profile-university"> · {profile.university}</span>}
+                {profile.country && <span className="profile-country"> · {profile.country}</span>}
               </div>
+              {profile.bio && <div className="profile-bio">{profile.bio}</div>}
             </div>
 
             {/* ELO display */}

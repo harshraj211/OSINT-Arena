@@ -66,7 +66,7 @@ function normalizeAnswer(rawAnswer, rules = {}) {
 
   if (config.removeSpecialChars) {
     // Keeps alphanumeric and dots/hyphens (useful for domains/IPs)
-    answer = answer.replace(/[^a-z0-9.\-]/g, "");
+    answer = answer.replace(/[^a-z0-9.-]/g, "");
   }
 
   return answer;

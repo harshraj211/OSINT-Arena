@@ -22,7 +22,6 @@ const admin = require("firebase-admin");
 // ── Lib imports (pure, portable) ──────────────────────────────────────────────
 const { calculateEloGain, calculateWrongAttemptDeduction } = require("../lib/calculateElo");
 const { calculateStreak } = require("../lib/calculateStreak");
-const { normalizeAnswer } = require("../lib/normalizeAnswer");
 const { verifyAnswer } = require("../lib/hashAnswer");
 const { runAntiCheatChecks } = require("../lib/antiCheat");
 const { incrementHeatmapDay, getCurrentYear } = require("../lib/heatmap");

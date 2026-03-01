@@ -18,6 +18,7 @@ import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import ReactMarkdown from "react-markdown";
 import Navbar from "../components/layout/Navbar";
+import WriteupEditor from "../components/writeup/WriteupEditor";
 import "./ChallengeSolve.css";
 
 const functions = getFunctions();
@@ -51,6 +52,7 @@ export default function ChallengeSolve() {
   const [result, setResult]               = useState(null); // { correct, eloChange, streak, breakdown, ... }
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [rateLimitSeconds, setRateLimitSeconds] = useState(0);
+  const [showWriteup, setShowWriteup]           = useState(false);
 
   // Timer
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -278,6 +280,53 @@ export default function ChallengeSolve() {
               </div>
             </section>
 
+            {/* Media attachment */}
+            {challenge.mediaURL && (
+              <section className="solve-section">
+                <div className="solve-section-header">
+                  <span className="solve-section-label">Attached File</span>
+                  <a
+                    href={challenge.mediaURL}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="solve-media-download"
+                    title="Download original file with metadata intact"
+                  >
+                    ↓ Download Original
+                  </a>
+                </div>
+                <div className="solve-media-wrap">
+                  {challenge.mediaType === "image" && (
+                    <img src={challenge.mediaURL} alt="Challenge media"
+                      className="solve-media-image" />
+                  )}
+                  {challenge.mediaType === "video" && (
+                    <video controls className="solve-media-video">
+                      <source src={challenge.mediaURL} />
+                      Your browser does not support video.
+                    </video>
+                  )}
+                  {challenge.mediaType === "audio" && (
+                    <audio controls className="solve-media-audio">
+                      <source src={challenge.mediaURL} />
+                    </audio>
+                  )}
+                  {(challenge.mediaType === "file" || (!["image","video","audio"].includes(challenge.mediaType))) && (
+                    <div className="solve-media-file">
+                      <span className="solve-media-file-icon">📎</span>
+                      <div>
+                        <div className="solve-media-file-name">{challenge.mediaFilename || "attached-file"}</div>
+                        <div className="solve-media-file-hint">Download the file to analyse it — metadata preserved.</div>
+                      </div>
+                      <a href={challenge.mediaURL} download target="_blank" rel="noopener noreferrer"
+                        className="solve-media-file-btn">Download</a>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Tool hint */}
             {challenge.toolHint && (
               <section className="solve-section">
@@ -421,12 +470,28 @@ export default function ChallengeSolve() {
                   </>
                 )}
 
-                <button
-                  className="solve-next-btn"
-                  onClick={() => navigate("/challenges")}
-                >
-                  Back to challenges →
-                </button>
+                <div className="solve-result-actions">
+                  <button
+                    className="solve-next-btn"
+                    onClick={() => navigate("/challenges")}
+                  >
+                    Back to challenges →
+                  </button>
+                  <button
+                    className={`solve-writeup-btn ${showWriteup ? "solve-writeup-btn--active" : ""}`}
+                    onClick={() => setShowWriteup(v => !v)}
+                  >
+                    📝 {showWriteup ? "Hide write-up" : "Add write-up"}
+                  </button>
+                </div>
+
+                {showWriteup && challengeId && (
+                  <WriteupEditor
+                    challengeId={challengeId}
+                    challengeTitle={challenge?.title}
+                    onClose={() => setShowWriteup(false)}
+                  />
+                )}
               </div>
             )}
 

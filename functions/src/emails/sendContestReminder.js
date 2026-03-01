@@ -30,7 +30,7 @@ const WINDOW_MAX_MS = 49 * 60 * 60 * 1000;
 module.exports = functions.pubsub
   .schedule("every 1 hours")
   .timeZone("UTC")
-  .onRun(async (context) => {
+  .onRun(async (_context) => {
     const nowMs = Date.now();
     const windowStart = nowMs + WINDOW_MIN_MS;
     const windowEnd   = nowMs + WINDOW_MAX_MS;

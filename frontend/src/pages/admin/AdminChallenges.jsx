@@ -11,8 +11,8 @@ import {
   doc, addDoc, updateDoc, deleteDoc,
   serverTimestamp, where,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from "../../firebase/config";
+import { db } from "../../firebase/config";
+import { uploadToCloudinary } from "../../lib/cloudinary";
 import { useAuth } from "../../context/AuthContext";
 import { hashAnswer } from "../../lib/hashAnswer";
 import "./AdminChallenges.css";
@@ -22,7 +22,7 @@ const CATEGORIES    = ["search","domain-recon","image-osint","metadata","network
                         "social-media","web-archive","geolocation","code-recon",
                         "dark-web","tools","people-search","data-breach","other"];
 const VISIBILITIES  = ["public", "draft", "private"];
-const MEDIA_TYPES   = ["none","image","video","audio"];
+const MEDIA_TYPES   = ["none","image","video","audio","file"];
 
 const EMPTY_FORM = {
   title: "", description: "", difficulty: "easy", category: "search",
@@ -96,16 +96,13 @@ export default function AdminChallenges() {
 
   async function handleMediaUpload(file) {
     if (!file) return "";
-    const path     = `challenges/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, path);
-    return new Promise((resolve, reject) => {
-      const task = uploadBytesResumable(storageRef, file);
-      task.on("state_changed",
-        snap => setUploadProgress(Math.round(snap.bytesTransferred / snap.totalBytes * 100)),
-        reject,
-        async () => { resolve(await getDownloadURL(task.snapshot.ref)); }
-      );
+    // Store original filename
+    setField("mediaFilename", file.name);
+    const { url } = await uploadToCloudinary(file, {
+      folder: "osint-arena/challenges",
+      onProgress: setUploadProgress,
     });
+    return url;
   }
 
   async function handleSave() {
@@ -137,6 +134,7 @@ export default function AdminChallenges() {
         timeLimit:   form.timeLimit ? Number(form.timeLimit) : null,
         mediaType:   form.mediaType,
         mediaURL:    mediaURL || null,
+        mediaFilename: form.mediaFilename || null,
         isActive:    form.visibility === "public",
         freeForAll:  form.difficulty === "easy",
         isFreeThisWeek: false,
@@ -183,9 +181,7 @@ export default function AdminChallenges() {
   async function permanentDelete(ch) {
     if (!isAdmin) return;
     if (!confirm(`PERMANENTLY DELETE "${ch.title}"? This cannot be undone.`)) return;
-    if (ch.mediaURL) {
-      try { await deleteObject(ref(storage, ch.mediaURL)); } catch {}
-    }
+    // Cloudinary deletion requires backend — files cleaned up from dashboard
     await deleteDoc(doc(db, "challenges", ch.id));
   }
 
@@ -392,7 +388,8 @@ export default function AdminChallenges() {
                   <input ref={fileRef} type="file" className="ac-file-input"
                     accept={
                       form.mediaType === "image" ? "image/*" :
-                      form.mediaType === "video" ? "video/*" : "audio/*"
+                      form.mediaType === "video" ? "video/*" :
+                      form.mediaType === "audio" ? "audio/*" : "*/*"
                     }
                   />
                   {uploadProgress > 0 && uploadProgress < 100 && (

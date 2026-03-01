@@ -54,7 +54,7 @@ module.exports = functions.auth.user().onCreate(async (user) => {
     role:           "user",        // "user" | "mod" | "admin"
 
     // ELO
-    elo:            500,           // starting ELO — same as Agent floor
+    elo:            0,             // starting ELO — earned through solving
     weeklyElo:      0,
     monthlyElo:     0,
 
@@ -109,7 +109,7 @@ module.exports = functions.auth.user().onCreate(async (user) => {
     uid,
     username,
     plan:          "free",
-    elo:           500,
+    elo:           0,
     weeklyElo:     0,
     monthlyElo:    0,
     totalSolved:   0,

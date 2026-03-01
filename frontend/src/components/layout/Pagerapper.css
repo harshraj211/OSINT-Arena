@@ -8,6 +8,7 @@
   flex-direction: column;
   min-height: 100vh;
   background: var(--color-bg);
+  transition: background 0.25s ease;
 }
 
 .page-main {

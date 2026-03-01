@@ -1,83 +1,147 @@
 /**
- * theme.css
- * Master CSS variables file for OSINT Arena.
- * Import this FIRST in main.jsx (before global.css, scanline.css).
- *
- * Every variable used anywhere in the codebase is defined here.
- *
+ * theme.css — OSINT Arena Design System v3
+ * Clean, professional. No neon. No glow. No scanlines.
+ * Inspired by: Linear, LeetCode, HackTheBox (clean version), Notion
+ * Font: "Inter" display + "JetBrains Mono" for data/code
  * File location: frontend/src/styles/theme.css
  */
 
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
+/* ── DARK THEME ─────────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", "Consolas", monospace;
+
+  /* Backgrounds — subtle layering, not pitch black */
+  --color-bg:        #0F1117;
+  --color-bg-2:      #13151C;
+  --color-surface:   #181B24;
+  --color-surface-2: #1E2130;
+  --color-surface-3: #232637;
+
+  /* Borders — very subtle */
+  --color-border:        #252836;
+  --color-border-subtle: #1C1F2E;
+  --color-border-strong: #333650;
+
+  /* Accent — clean blue, no glow */
+  --color-accent:      #4F8EF7;
+  --color-accent-dim:  #3D7AE8;
+  --color-accent-bg:   rgba(79,142,247,0.08);
+  --color-accent-text: #4F8EF7;
+
+  /* Success green — muted, not neon */
+  --color-green:     #3DD68C;
+  --color-green-dim: #2EC47A;
+  --color-green-bg:  rgba(61,214,140,0.08);
+
+  /* Status */
+  --color-warning:  #F5A623;
+  --color-error:    #E85D5D;
+  --color-success:  #3DD68C;
+
+  /* Difficulty */
+  --color-easy:   #3DD68C;
+  --color-medium: #F5A623;
+  --color-hard:   #E85D5D;
+
+  /* Text */
+  --color-text:         #E2E8F0;
+  --color-text-muted:   #7C8599;
+  --color-text-subtle:  #404659;
+  --color-text-inverse: #0F1117;
+
+  /* No shadows/glows — just depth */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+
+  /* Navbar */
+  --navbar-bg:     rgba(15,17,23,0.95);
+  --navbar-border: #1E2130;
+}
+
+/* ── LIGHT THEME ─────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --font-body:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", "Consolas", monospace;
+
+  --color-bg:        #F8F9FC;
+  --color-bg-2:      #FFFFFF;
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #F3F4F8;
+  --color-surface-3: #ECEEF4;
+
+  --color-border:        #E2E5EE;
+  --color-border-subtle: #ECEEF4;
+  --color-border-strong: #CDD0DC;
+
+  --color-accent:      #2563EB;
+  --color-accent-dim:  #1D55D8;
+  --color-accent-bg:   rgba(37,99,235,0.06);
+  --color-accent-text: #2563EB;
+
+  --color-green:     #16A34A;
+  --color-green-dim: #15803D;
+  --color-green-bg:  rgba(22,163,74,0.06);
+
+  --color-warning:  #D97706;
+  --color-error:    #DC2626;
+  --color-success:  #16A34A;
+
+  --color-easy:   #16A34A;
+  --color-medium: #D97706;
+  --color-hard:   #DC2626;
+
+  --color-text:         #111827;
+  --color-text-muted:   #6B7280;
+  --color-text-subtle:  #9CA3AF;
+  --color-text-inverse: #FFFFFF;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+
+  --navbar-bg:     rgba(248,249,252,0.95);
+  --navbar-border: #E2E5EE;
+}
+
+/* ── SHARED TOKENS ────────────────────────────────────────────────────────── */
 :root {
+  /* Type scale — Inter-optimized */
+  --text-xs:   0.6875rem;
+  --text-sm:   0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg:   1.0625rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
 
-  /* ── Fonts ──────────────────────────────────────────────────────────────── */
-  --font-mono:   "JetBrains Mono", "Fira Code", "Consolas", monospace;
-  --font-body:   "Sora", "Segoe UI", system-ui, sans-serif;
+  /* Weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-black:    800;
 
-  /* ── Core palette ───────────────────────────────────────────────────────── */
-  --color-bg:           #0D0F12;
-  --color-surface:      #161B22;
-  --color-surface-2:    #1C2230;
-
-  /* ── Accent colors ──────────────────────────────────────────────────────── */
-  --color-accent:       #00FF88;
-  --color-accent-dim:   #00E67A;
-  --color-accent-glow:  rgba(0, 255, 136, 0.08);
-
-  --color-blue:         #00BFFF;
-  --color-blue-dim:     #00A8E0;
-  --color-blue-glow:    rgba(0, 191, 255, 0.08);
-
-  --color-warning:      #FF9500;
-  --color-error:        #FF4D4D;
-
-  /* ── Difficulty colors ──────────────────────────────────────────────────── */
-  --color-easy:         #00FF88;
-  --color-medium:       #FF9500;
-  --color-hard:         #FF4D4D;
-
-  /* ── Text ───────────────────────────────────────────────────────────────── */
-  --color-text:         #E6EDF3;
-  --color-text-muted:   #8B949E;
-  --color-text-subtle:  #484F58;
-
-  /* ── Borders ────────────────────────────────────────────────────────────── */
-  --color-border:        #30363D;
-  --color-border-subtle: #21262D;
-
-  /* ── Shadows ────────────────────────────────────────────────────────────── */
-  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md:     0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg:     0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-accent: 0 4px 20px rgba(0, 255, 136, 0.25);
-
-  /* ── Typography scale ───────────────────────────────────────────────────── */
-  --text-xs:    0.75rem;
-  --text-sm:    0.875rem;
-  --text-base:  1rem;
-  --text-lg:    1.125rem;
-  --text-xl:    1.25rem;
-  --text-2xl:   1.5rem;
-  --text-3xl:   1.875rem;
-  --text-4xl:   2.25rem;
-
-  /* ── Border radius ──────────────────────────────────────────────────────── */
-  --radius-sm:   4px;
+  /* Radii — subtle, not round */
+  --radius-xs:   3px;
+  --radius-sm:   6px;
   --radius-md:   8px;
   --radius-lg:   12px;
   --radius-xl:   16px;
   --radius-full: 9999px;
 
-  /* ── Transitions ────────────────────────────────────────────────────────── */
-  --transition-fast:   0.15s ease;
-  --transition-normal: 0.25s ease;
-  --transition-slow:   0.4s ease;
+  /* Transitions */
+  --transition-fast:   0.1s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow:   0.35s ease;
 
-  /* ── Layout ─────────────────────────────────────────────────────────────── */
-  --navbar-height:  56px;
-  --content-max:    1200px;
-  --sidebar-width:  220px;
-
+  /* Layout */
+  --navbar-height: 56px;
+  --content-max:   1200px;
+  --sidebar-width: 220px;
 }
