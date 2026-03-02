@@ -131,7 +131,7 @@ export default function ChallengeSolve() {
       const res = await submitAnswerFn({
         challengeId,
         answer: answer.trim(),
-        hintUsed,
+        // hintUsed is NOT sent — server reads it from activeSession
         contestId: null,
       });
 
@@ -171,10 +171,23 @@ export default function ChallengeSolve() {
     }, 1000);
   }
 
-  // ── Hint reveal ───────────────────────────────────────────────────────────
-  function handleRevealHint() {
-    setHintVisible(true);
-    setHintUsed(true);
+  // ── Hint reveal — calls server to set hintUsed on session ───────────────
+  const [hintLoading, setHintLoading] = useState(false);
+  const [hintText, setHintText]       = useState(null);
+
+  async function handleRevealHint() {
+    if (hintLoading) return;
+    setHintLoading(true);
+    try {
+      const res = await unlockHintFn({ challengeId });
+      setHintText(res.data.hint);
+      setHintVisible(true);
+      setHintUsed(true); // UI state only — actual penalty tracked server-side
+    } catch (err) {
+      console.error("Failed to unlock hint:", err);
+    } finally {
+      setHintLoading(false);
+    }
   }
 
   // ── Panel drag resize ─────────────────────────────────────────────────────
@@ -353,11 +366,11 @@ export default function ChallengeSolve() {
                 {hintVisible ? (
                   <div className="solve-hint-revealed">
                     <span className="solve-hint-icon">💡</span>
-                    <p>{challenge.hint}</p>
+                    <p>{hintText || "Hint unlocked."}</p>
                   </div>
                 ) : (
-                  <button className="solve-hint-btn" onClick={handleRevealHint}>
-                    Reveal hint
+                  <button className="solve-hint-btn" onClick={handleRevealHint} disabled={hintLoading}>
+                    {hintLoading ? "Unlocking..." : "Reveal hint"}
                     <span className="solve-hint-btn-penalty">−20% ELO penalty</span>
                   </button>
                 )}

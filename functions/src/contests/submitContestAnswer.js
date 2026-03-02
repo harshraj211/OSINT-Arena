@@ -37,7 +37,8 @@ exports.submitContestAnswer = onCall({ enforceAppCheck: false }, async (request)
   if (!auth.token.email_verified) throw new HttpsError("failed-precondition", "Email not verified.");
 
   const userId = auth.uid;
-  const { contestId, challengeId, answer, hintUsed } = request.data;
+  const { contestId, challengeId, answer } = request.data;
+  // SECURITY: hintUsed read from server-side activeSession below
 
   if (!contestId || !challengeId || !answer) {
     throw new HttpsError("invalid-argument", "contestId, challengeId, and answer are required.");
@@ -75,6 +76,12 @@ exports.submitContestAnswer = onCall({ enforceAppCheck: false }, async (request)
   const challengeSnap = await db.collection("challenges").doc(challengeId).get();
   if (!challengeSnap.exists) throw new HttpsError("not-found", "Challenge not found.");
   const challenge = challengeSnap.data();
+
+  // ── Fetch activeSession for server-side hintUsed ─────────────────────────
+  const sessionId   = `${userId}_${challengeId}`;
+  const sessionSnap = await db.collection("activeSessions").doc(sessionId).get();
+  // SECURITY: If no session exists, hintUsed defaults to false (can't claim hint penalty reduction)
+  const hintUsed    = sessionSnap.exists ? (sessionSnap.data().hintUsed === true) : false;
 
   // Verify challenge is part of this contest
   if (!contest.challengeIds?.includes(challengeId)) {

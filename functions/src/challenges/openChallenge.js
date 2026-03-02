@@ -85,8 +85,7 @@ module.exports = functions.https.onCall(async (data, context) => {
       challengeId,
       openTimestamp,
       expiresAt,
-      // TTL field for Firestore TTL policy (configure in Firebase console)
-      // Field name must match what you set in TTL policy: "expiresAt"
+      hintUsed: false, // SECURITY: hint state tracked server-side only
       expiresAtTimestamp: admin.firestore.Timestamp.fromMillis(expiresAt),
     });
 

@@ -31,6 +31,7 @@ initializeApp();
 // ────────────────────────────────────────────────────────────────────────────
 exports.openChallenge = require("./challenges/openChallenge");
 exports.submitAnswer  = require("./challenges/submitAnswer");
+exports.unlockHint    = require("./challenges/unlockHint");
 
 // rotateWeeklyFreeChallenge → scheduled Mon 00:00 UTC — picks this week's free hard challenge
 const { rotateWeeklyFreeChallenge } = require("./challenges/rotateWeeklyFreeChallenge");

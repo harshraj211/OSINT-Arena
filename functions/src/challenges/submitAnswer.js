@@ -44,7 +44,8 @@ module.exports = functions.https.onCall(async (data, context) => {
   const userId = context.auth.uid;
 
   // ── 2. Input validation ───────────────────────────────────────────────────────
-  const { challengeId, answer, hintUsed = false, contestId = null } = data;
+  const { challengeId, answer, contestId = null } = data;
+  // SECURITY: hintUsed is NOT accepted from client — read from activeSession below
 
   if (!challengeId || typeof challengeId !== "string") {
     throw new functions.https.HttpsError("invalid-argument", "challengeId is required.");
@@ -86,8 +87,10 @@ module.exports = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const session = sessionSnap.data();
+  const session  = sessionSnap.data();
   const timeTaken = Math.floor((nowMs - session.openTimestamp) / 1000); // seconds
+  // SECURITY: read hintUsed from server-side session, never from client payload
+  const hintUsed  = session.hintUsed === true;
 
   // ── 5. Fetch user doc ─────────────────────────────────────────────────────────
   const userRef = db.collection("users").doc(userId);
