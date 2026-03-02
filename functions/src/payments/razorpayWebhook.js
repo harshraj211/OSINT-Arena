@@ -49,6 +49,15 @@ const BILLING_DURATIONS = {
   yearly:  365,
 };
 
+// SECURITY: Minimum acceptable payment amounts (in paise — 1 INR = 100 paise)
+// An attacker can manipulate the Razorpay client-side amount to pay ₹1.
+// We must verify the server-side amount matches the expected price.
+// Set these to your actual Pro prices minus a small tolerance (5%).
+const MIN_AMOUNTS_PAISE = {
+  monthly: Math.floor(29900 * 0.95),  // ₹299/mo — tolerance for currency rounding
+  yearly:  Math.floor(199900 * 0.95), // ₹1999/yr
+};
+
 exports.razorpayWebhook = onRequest(
   {
     secrets: [RAZORPAY_WEBHOOK_SECRET],
@@ -127,8 +136,7 @@ exports.razorpayWebhook = onRequest(
 async function handlePaymentCaptured(payment) {
   const paymentId = payment.id;
   const email     = payment.email;
-  const notes     = payment.notes || {};
-  const billing   = notes.billing || "monthly"; // passed from frontend checkout options
+  // Note: billing already extracted above in amount verification
 
   // ── Idempotency check ─────────────────────────────────────────────────
   const paymentRef = db.collection("payments").doc(paymentId);
@@ -136,6 +144,27 @@ async function handlePaymentCaptured(payment) {
   if (existing.exists) {
     console.log(`razorpayWebhook: payment ${paymentId} already processed — skipping`);
     return;
+  }
+
+  // ── SECURITY: Verify payment amount ───────────────────────────────────────
+  // Prevent ₹1 subscription fraud — client can manipulate checkout amount.
+  // Razorpay signs whatever amount was charged, so signature alone is not enough.
+  const billing   = (payment.notes || {}).billing || "monthly";
+  const minAmount = MIN_AMOUNTS_PAISE[billing] || MIN_AMOUNTS_PAISE.monthly;
+  if (!payment.amount || payment.amount < minAmount) {
+    console.error(`razorpayWebhook: FRAUD DETECTED — payment ${payment.id} amount ${payment.amount} paise below minimum ${minAmount} paise for ${billing} plan`);
+    // Log suspicious payment for manual review
+    await db.collection("paymentFailures").add({
+      paymentId: payment.id,
+      email: payment.email,
+      amount: payment.amount,
+      expectedMinimum: minAmount,
+      billing,
+      reason: "amount_below_minimum",
+      createdAt: Timestamp.now(),
+      rawPayment: payment,
+    });
+    return; // Do NOT grant Pro
   }
 
   // ── Find user by email ────────────────────────────────────────────────

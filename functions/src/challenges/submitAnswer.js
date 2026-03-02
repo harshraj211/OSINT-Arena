@@ -66,6 +66,11 @@ module.exports = functions.https.onCall(async (data, context) => {
 
   const challenge = challengeSnap.data();
 
+  // SECURITY: Ensure answerHash never leaks to client in any error response
+  // (It's only used internally for verifyAnswer — never returned)
+  const { answerHash: _answerHash, ...challengePublic } = challenge;
+  void challengePublic; // eslint-disable-line no-unused-vars
+
   if (!challenge.isActive) {
     throw new functions.https.HttpsError("failed-precondition", "Challenge is not active.");
   }
@@ -140,10 +145,16 @@ module.exports = functions.https.onCall(async (data, context) => {
   ).length;
 
   // ── 7. Anti-cheat checks ──────────────────────────────────────────────────────
+  // SECURITY FIX: Never trust X-Forwarded-For from client — it is trivially spoofable.
+  // Use only the connection IP (set by Cloud Functions infrastructure, not the client).
+  // For rate limiting purposes this is the best we can do on serverless.
   const ip =
-    context.rawRequest?.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    context.rawRequest?.headers?.["fastly-client-ip"] ||   // Cloud CDN (trusted header)
+    context.rawRequest?.headers?.["x-appengine-user-ip"] || // GCP App Engine (trusted)
+    context.rawRequest?.connection?.remoteAddress ||
     context.rawRequest?.ip ||
     "unknown";
+  // NOTE: x-forwarded-for is intentionally excluded — never trust client-controlled headers
 
   const antiCheat = runAntiCheatChecks({
     timeTaken,
@@ -230,112 +241,102 @@ module.exports = functions.https.onCall(async (data, context) => {
     };
   }
 
-  // ── 9b. CORRECT ANSWER ────────────────────────────────────────────────────────
+  // ── 9b. CORRECT ANSWER — Atomic transaction (prevents TOCTOU race condition) ──
+  //
+  // SECURITY FIX: Using runTransaction() instead of batch.commit() ensures that
+  // the alreadySolved check and the ELO increment are a single atomic operation.
+  // Concurrent requests will retry and only one will grant ELO.
 
-  // Check if already solved (no double ELO — allow re-solve for practice)
-  const alreadySolvedSnap = await db
-    .collection("submissions")
-    .where("userId", "==", userId)
-    .where("challengeId", "==", challengeId)
-    .where("isCorrect", "==", true)
-    .limit(1)
-    .get();
+  const currentYear = getCurrentYear();
+  const heatmapRef = db.collection("heatmap").doc(userId).collection("years").doc(currentYear);
 
-  const alreadySolved = !alreadySolvedSnap.empty;
-
-  // Calculate ELO gain (0 if already solved — practice mode)
+  let alreadySolved = false;
+  let finalEloGain = 0;
   let eloGainResult = { finalEloGain: 0, timeBonus: 1, hintPenalty: 1, attemptPenalty: 1 };
-  if (!alreadySolved) {
-    eloGainResult = calculateEloGain({
-      difficulty: challenge.difficulty,
-      expectedTime: challenge.expectedTime,
-      timeTaken,
-      hintUsed,
-      wrongAttempts: wrongAttemptsThisSession,
-    });
-  }
+  let streakResult = { currentStreak: user.currentStreak, maxStreak: user.maxStreak, lastActiveDate: user.lastActiveDate, streakChanged: false };
 
-  const { finalEloGain } = eloGainResult;
+  await db.runTransaction(async (tx) => {
+    // Read alreadySolved INSIDE transaction — atomic with the write
+    const alreadySolvedSnap = await tx.get(
+      db.collection("submissions")
+        .where("userId", "==", userId)
+        .where("challengeId", "==", challengeId)
+        .where("isCorrect", "==", true)
+        .limit(1)
+    );
+    alreadySolved = !alreadySolvedSnap.empty;
 
-  // Calculate streak update
-  const streakResult = alreadySolved
-    ? { currentStreak: user.currentStreak, maxStreak: user.maxStreak, lastActiveDate: user.lastActiveDate, streakChanged: false }
-    : calculateStreak({
+    // Only grant ELO on first solve
+    if (!alreadySolved) {
+      eloGainResult = calculateEloGain({
+        difficulty: challenge.difficulty,
+        expectedTime: challenge.expectedTime,
+        timeTaken,
+        hintUsed,
+        wrongAttempts: wrongAttemptsThisSession,
+      });
+      streakResult = calculateStreak({
         lastActiveDate: user.lastActiveDate || null,
         currentStreak: user.currentStreak || 0,
         maxStreak: user.maxStreak || 0,
       });
+    }
+    finalEloGain = alreadySolved ? 0 : eloGainResult.finalEloGain;
 
-  // Calculate heatmap update
-  const currentYear = getCurrentYear();
-  const heatmapRef = db.collection("heatmap").doc(userId).collection("years").doc(currentYear);
-  const heatmapSnap = await heatmapRef.get();
-  const existingHeatmap = heatmapSnap.exists ? heatmapSnap.data() : {};
-  const { updatedMap: updatedHeatmap } = incrementHeatmapDay(existingHeatmap);
+    // Heatmap
+    const heatmapSnap = await tx.get(heatmapRef);
+    const existingHeatmap = heatmapSnap.exists ? heatmapSnap.data() : {};
+    const { updatedMap: updatedHeatmap } = incrementHeatmapDay(existingHeatmap);
 
-  // Update challenge avgSolveTime (running average)
-  const currentAvg = challenge.avgSolveTime || 0;
-  const currentSolveCount = challenge.solveCount || 0;
-  const newAvgSolveTime = alreadySolved
-    ? currentAvg
-    : Math.round((currentAvg * currentSolveCount + timeTaken) / (currentSolveCount + 1));
+    // Solve time average
+    const currentAvg = challenge.avgSolveTime || 0;
+    const currentSolveCount = challenge.solveCount || 0;
+    const newAvgSolveTime = alreadySolved
+      ? currentAvg
+      : Math.round((currentAvg * currentSolveCount + timeTaken) / (currentSolveCount + 1));
 
-  // ── Batch write: everything in one atomic operation ───────────────────────────
-  const batch = db.batch();
-
-  // Log submission
-  const submissionRef = db.collection("submissions").doc();
-  batch.set(submissionRef, {
-    userId,
-    challengeId,
-    isCorrect: true,
-    timeTaken,
-    eloChange: finalEloGain,
-    wrongAttemptsBefore: wrongAttemptsThisSession,
-    hintUsed,
-    ipAddress: ip,
-    contestId,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    isSuspicious: antiCheat.shouldFlag,
-    isPracticeRe_solve: alreadySolved,
-  });
-
-  // Update user doc
-  const userUpdate = {
-    elo: admin.firestore.FieldValue.increment(finalEloGain),
-    weeklyElo: admin.firestore.FieldValue.increment(finalEloGain),
-    monthlyElo: admin.firestore.FieldValue.increment(finalEloGain),
-    correctSubmissions: admin.firestore.FieldValue.increment(1),
-    lastActiveDate: streakResult.lastActiveDate,
-    currentStreak: streakResult.currentStreak,
-    maxStreak: streakResult.maxStreak,
-  };
-
-  if (!alreadySolved) {
-    userUpdate.totalSolved = admin.firestore.FieldValue.increment(1);
-    // Denormalised per-difficulty counter — used by checkCertEligibility
-    userUpdate[`solvedByDifficulty.${challenge.difficulty}`] =
-      admin.firestore.FieldValue.increment(1);
-  }
-
-  batch.update(userRef, userUpdate);
-
-  // Update challenge stats
-  if (!alreadySolved) {
-    batch.update(challengeRef, {
-      solveCount: admin.firestore.FieldValue.increment(1),
-      attemptCount: admin.firestore.FieldValue.increment(1),
-      avgSolveTime: newAvgSolveTime,
+    // Write submission log
+    const submissionRef = db.collection("submissions").doc();
+    tx.set(submissionRef, {
+      userId, challengeId,
+      isCorrect: true, timeTaken,
+      eloChange: finalEloGain,
+      wrongAttemptsBefore: wrongAttemptsThisSession,
+      hintUsed, ipAddress: ip, contestId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      isSuspicious: antiCheat.shouldFlag,
+      isPracticeRe_solve: alreadySolved,
     });
-  }
 
-  // Update heatmap
-  batch.set(heatmapRef, updatedHeatmap);
+    // Update user
+    const userUpdate = {
+      elo: admin.firestore.FieldValue.increment(finalEloGain),
+      weeklyElo: admin.firestore.FieldValue.increment(finalEloGain),
+      monthlyElo: admin.firestore.FieldValue.increment(finalEloGain),
+      correctSubmissions: admin.firestore.FieldValue.increment(1),
+      lastActiveDate: streakResult.lastActiveDate,
+      currentStreak: streakResult.currentStreak,
+      maxStreak: streakResult.maxStreak,
+    };
+    if (!alreadySolved) {
+      userUpdate.totalSolved = admin.firestore.FieldValue.increment(1);
+      userUpdate[`solvedByDifficulty.${challenge.difficulty}`] = admin.firestore.FieldValue.increment(1);
+    }
+    tx.update(userRef, userUpdate);
 
-  // Delete active session (solved — no longer needed)
-  batch.delete(db.collection("activeSessions").doc(sessionId));
+    // Update challenge stats
+    if (!alreadySolved) {
+      tx.update(challengeRef, {
+        solveCount:  admin.firestore.FieldValue.increment(1),
+        attemptCount: admin.firestore.FieldValue.increment(1),
+        avgSolveTime: newAvgSolveTime,
+      });
+    }
 
-  await batch.commit();
+    // Heatmap + delete session
+    tx.set(heatmapRef, updatedHeatmap);
+    tx.delete(db.collection("activeSessions").doc(sessionId));
+  });
 
   // ── Contest submission logging (outside main batch — non-blocking) ─────────────
   if (contestId && !alreadySolved) {

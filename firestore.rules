@@ -2,11 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAuth()  { return request.auth != null; }
-    function isOwner(userId) { return isAuth() && request.auth.uid == userId; }
-    function getRole() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role; }
-    function isAdmin() { return isAuth() && getRole() == 'admin'; }
-    function isMod()   { return isAuth() && (getRole() == 'mod' || getRole() == 'moderator' || isAdmin()); }
+    function isAuth()     { return request.auth != null; }
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+    function isAdmin()    { return isAuth() && request.auth.token.role == 'admin'; }
+    function isMod()      { return isAuth() && (request.auth.token.role == 'mod' || request.auth.token.role == 'moderator' || isAdmin()); }
     function isVerified() { return isAuth() && request.auth.token.email_verified == true; }
     function hasOnly(fields) { return request.resource.data.keys().hasOnly(fields); }
 
@@ -14,7 +13,9 @@ service cloud.firestore {
       allow read:   if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) && isVerified()
-                       && hasOnly(['username', 'displayName', 'photoURL'])
+                       && hasOnly(['username', 'displayName', 'photoURL', 'bio',
+                                   'gender', 'country', 'university', 'website',
+                                   'presetAvatar', 'updatedAt'])
                     || isAdmin();
       allow delete: if false;
     }
@@ -30,17 +31,21 @@ service cloud.firestore {
                      && resource.data.isDeleted == false;
       allow read: if isMod();
       allow create: if isMod() && isVerified()
-        && request.resource.data.keys().hasAll(['title','description','difficulty','flagHash','createdBy'])
+        && request.resource.data.keys().hasAll(['title','description','difficulty','createdBy'])
         && request.resource.data.createdBy == request.auth.uid;
       allow update: if isMod() && isVerified();
       allow delete: if isAdmin();
+
+      match /secrets/{secretId} {
+        allow read:  if false;
+        allow write: if false;
+      }
     }
 
     match /submissions/{submissionId} {
       allow read:   if isAuth() && resource.data.userId == request.auth.uid;
       allow read:   if isMod();
-      allow create: if isAuth() && isVerified()
-                       && request.resource.data.userId == request.auth.uid;
+      allow create: if false;
       allow update: if false;
       allow delete: if isAdmin();
     }
@@ -112,33 +117,26 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ── Follows collection ──────────────────────────────────────────
-    // Document ID format: {followerId}_{followingId}
     match /follows/{followId} {
-      // Anyone logged in can see who follows who (public social graph)
       allow read: if isAuth();
-
-      // Only create your own follow — can't follow as someone else
-      allow create: if isAuth()
-                       && request.resource.data.followerId == request.auth.uid
-                       && request.resource.data.followingId != request.auth.uid
-                       && request.resource.data.keys().hasAll(['followerId', 'followingId', 'createdAt'])
-                       && request.resource.data.keys().hasOnly(['followerId', 'followingId', 'createdAt']);
-
-      // No updates allowed — follow is immutable
-      allow update: if false;
-
-      // Only the follower can unfollow (delete their own follow doc)
+      allow create: if isAuth() && isVerified()
+        && request.resource.data.followerId == request.auth.uid
+        && followId == request.auth.uid + "_" + request.resource.data.followingId;
       allow delete: if isAuth()
-                       && resource.data.followerId == request.auth.uid;
+        && resource.data.followerId == request.auth.uid;
     }
 
-    // ── Follow counters (denormalized for fast reads) ───────────────
-    // Stored under publicProfiles for performance
-    // Written only by Cloud Functions — not directly by clients
-    match /followCounts/{userId} {
+    match /badges/{badgeId} {
       allow read:  if isAuth();
       allow write: if false;
+    }
+
+    match /writeups/{writeupId} {
+      allow read:  if resource.data.isPublic == true || isOwner(resource.data.userId) || isMod();
+      allow create: if isAuth() && isVerified()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
     match /{document=**} {
