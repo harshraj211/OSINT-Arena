@@ -118,7 +118,8 @@ export default function Challenges() {
     try {
       let q = query(
         collection(db, "challenges"),
-        where("isActive", "==", true)
+        where("isActive", "==", true),
+        where("isDeleted", "==", false)
       );
 
       // Difficulty filter
@@ -152,6 +153,44 @@ export default function Challenges() {
       setHasMore(snap.docs.length === PAGE_SIZE);
     } catch (err) {
       console.error("loadChallenges:", err);
+
+      // Fallback: avoid index-sensitive sorting queries and recover with
+      // client-side filtering/sorting so challenges still appear.
+      try {
+        const baseSnap = await getDocs(query(
+          collection(db, "challenges"),
+          where("isActive", "==", true),
+          where("isDeleted", "==", false)
+        ));
+
+        let items = baseSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        if (difficulty !== "all") {
+          items = items.filter((c) => c.difficulty === difficulty);
+        }
+
+        switch (sortBy) {
+          case "popular":
+            items.sort((a, b) => (b.solveCount || 0) - (a.solveCount || 0));
+            break;
+          case "hardest":
+            items = items.filter((c) => c.difficulty === "hard");
+            items.sort((a, b) => (a.solveCount || 0) - (b.solveCount || 0));
+            break;
+          case "easiest":
+            items = items.filter((c) => c.difficulty === "easy");
+            items.sort((a, b) => (b.solveCount || 0) - (a.solveCount || 0));
+            break;
+          default:
+            items.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        }
+
+        setChallenges(items);
+        setLastDoc(null);
+        setHasMore(false);
+      } catch (fallbackErr) {
+        console.error("loadChallenges fallback:", fallbackErr);
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -291,13 +330,16 @@ export default function Challenges() {
                     style={{ "--card-i": idx }}
                     onClick={() => locked
                       ? navigate("/pricing", { state: { reason: "pro_required" } })
-                      : navigate(`/challenges/${challenge.slug}`)
+                      : challenge.type === "investigation"
+                        ? navigate(`/investigate/${challenge.id}`)
+                        : navigate(`/challenges/${challenge.slug}`)
                     }
                   >
                     {/* Top row: status + chips */}
                     <div className="challenge-card-top">
                       <div className="challenge-card-chips">
                         <span className={`ch-diff-chip ch-diff-chip--${diff}`}>{diff}</span>
+                        {challenge.type === "investigation" && <span className="ch-invest-badge">🔍 Investigation</span>}
                         {isWeeklyFree && <span className="ch-free-badge">FREE WEEK</span>}
                         {locked && <span className="ch-pro-badge">PRO</span>}
                         {solved && <span className="ch-solved-badge">✓ Solved</span>}

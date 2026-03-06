@@ -14,6 +14,7 @@ import "./AdminLayout.css";
 
 const ADMIN_NAV = [
   { to: "/admin/dashboard",  label: "Dashboard",  icon: "⊞" },
+  { to: "/admin/analytics",  label: "Analytics",  icon: "◉" },
   { to: "/admin/challenges", label: "Challenges",  icon: "◈" },
   { to: "/admin/contests",   label: "Contests",    icon: "⬡" },
   { to: "/admin/users",      label: "Users",       icon: "⊙" },

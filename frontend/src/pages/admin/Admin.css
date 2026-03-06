@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Admin.css
  * Shared styles for AdminDashboard, AdminUsers, AdminFlags.
  * Imported by each page directly.
@@ -6,7 +6,7 @@
  * File location: frontend/src/pages/admin/Admin.css
  */
 
-/* ── Page shell ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Page shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-page {
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Page header ──────────────────────────────────────────────────────────── */
+/* â”€â”€ Page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-page-header {
   display: flex;
   align-items: center;
@@ -63,13 +63,13 @@
 }
 .admin-refresh-btn:hover { border-color: var(--color-border); color: var(--color-text); }
 
-/* ── Flags alert banner ───────────────────────────────────────────────────── */
+/* â”€â”€ Flags alert banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-flags-alert {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255,77,77,0.06);
-  border: 1px solid rgba(255,77,77,0.25);
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.25);
   border-radius: var(--radius-md);
   padding: 12px 16px;
   font-size: var(--text-sm);
@@ -78,11 +78,11 @@
   text-decoration: none;
   transition: background var(--transition-fast);
 }
-.admin-flags-alert:hover { background: rgba(255,77,77,0.1); color: var(--color-error); }
+.admin-flags-alert:hover { background: rgba(239,68,68,0.1); color: var(--color-error); }
 .admin-flags-alert-icon  { font-size: 16px; }
 .admin-flags-alert-arrow { margin-left: auto; }
 
-/* ── Section ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-section { display: flex; flex-direction: column; gap: 12px; }
 .admin-section-title {
   font-family: var(--font-mono);
@@ -107,7 +107,7 @@
   background: var(--color-border-subtle);
 }
 
-/* ── Stat cards grid ──────────────────────────────────────────────────────── */
+/* â”€â”€ Stat cards grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-stats-grid {
   display: grid;
   gap: 10px;
@@ -147,14 +147,14 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Two-col layout ───────────────────────────────────────────────────────── */
+/* â”€â”€ Two-col layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-/* ── Card ─────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
@@ -174,7 +174,7 @@
   margin: 0;
 }
 
-/* ── KV list ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ KV list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-kv-list { display: flex; flex-direction: column; gap: 8px; }
 .admin-kv-row {
   display: flex;
@@ -202,7 +202,7 @@
   color: var(--color-text-muted);
 }
 
-/* ── ELO Histogram ────────────────────────────────────────────────────────── */
+/* â”€â”€ ELO Histogram â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-histogram {
   display: flex;
   align-items: flex-end;
@@ -241,7 +241,7 @@
   transform-origin: top left;
 }
 
-/* ── Quick actions ────────────────────────────────────────────────────────── */
+/* â”€â”€ Quick actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-quick-btn {
   background: var(--color-surface);
@@ -256,7 +256,7 @@
 }
 .admin-quick-btn:hover { border-color: var(--color-border); color: var(--color-text); }
 
-/* ── Loading / error states ───────────────────────────────────────────────── */
+/* â”€â”€ Loading / error states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-loading {
   display: flex;
   flex-direction: column;
@@ -300,7 +300,7 @@
   cursor: pointer;
 }
 
-/* ── Empty note ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Empty note â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-empty-note {
   font-size: var(--text-sm);
   color: var(--color-text-subtle);
@@ -313,7 +313,7 @@
   color: var(--color-text-subtle);
 }
 
-/* ── Chips ────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-chip {
   display: inline-block;
   font-size: 10px;
@@ -324,23 +324,23 @@
   padding: 2px 6px;
   text-transform: uppercase;
 }
-.admin-chip--pro     { color: #0D0F12; background: var(--color-accent); }
+.admin-chip--pro     { color: var(--color-text-inverse); background: var(--color-accent); }
 .admin-chip--free    { color: var(--color-text-subtle); background: var(--color-surface-2); border: 1px solid var(--color-border-subtle); }
-.admin-chip--admin   { color: var(--color-blue); background: rgba(0,191,255,0.1); }
-.admin-chip--mod     { color: var(--color-warning); background: rgba(255,149,0,0.1); }
+.admin-chip--admin   { color: var(--color-blue); background: rgba(59,130,246,0.1); }
+.admin-chip--mod     { color: var(--color-warning); background: rgba(234,179,8,0.1); }
 .admin-chip--user    { color: var(--color-text-subtle); background: var(--color-surface-2); }
 .admin-chip--banned  { color: #fff; background: var(--color-error); }
-.admin-chip--flagged { color: var(--color-warning); background: rgba(255,149,0,0.1); }
-.admin-chip--ok      { color: var(--color-accent); background: rgba(0,255,136,0.08); }
+.admin-chip--flagged { color: var(--color-warning); background: rgba(234,179,8,0.1); }
+.admin-chip--ok      { color: var(--color-accent); background: rgba(6,182,212,0.08); }
 
-/* ── Admin mono ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Admin mono â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-mono {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
-/* ── Search row ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Search row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-search-row {
   display: flex;
   gap: 8px;
@@ -364,7 +364,7 @@
   background: var(--color-blue);
   border: none;
   border-radius: var(--radius-md);
-  color: #0D0F12;
+  color: var(--color-text-inverse);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -384,7 +384,7 @@
   cursor: pointer;
 }
 
-/* ── Users layout (table + detail panel) ─────────────────────────────────── */
+/* â”€â”€ Users layout (table + detail panel) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-users-layout {
   display: grid;
   grid-template-columns: 1fr 280px;
@@ -425,7 +425,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .admin-table-row:hover { border-color: var(--color-border); background: var(--color-surface-2); }
-.admin-table-row--selected { border-color: var(--color-blue) !important; background: rgba(0,191,255,0.04) !important; }
+.admin-table-row--selected { border-color: var(--color-blue) !important; background: rgba(59,130,246,0.04) !important; }
 .admin-table-row--banned { opacity: 0.6; }
 
 .admin-user-cell {
@@ -439,7 +439,7 @@
   height: 24px;
   border-radius: 50%;
   background: var(--color-blue);
-  color: #0D0F12;
+  color: var(--color-text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -457,7 +457,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── User / Flag detail panel ─────────────────────────────────────────────── */
+/* â”€â”€ User / Flag detail panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-user-detail,
 .admin-flag-detail {
   background: var(--color-surface);
@@ -552,10 +552,10 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
-.admin-action-msg--ok  { background: rgba(0,255,136,0.08); color: var(--color-accent); }
-.admin-action-msg--err { background: rgba(255,77,77,0.08); color: var(--color-error); }
+.admin-action-msg--ok  { background: rgba(6,182,212,0.08); color: var(--color-accent); }
+.admin-action-msg--err { background: rgba(239,68,68,0.08); color: var(--color-error); }
 
-/* ── Inputs ───────────────────────────────────────────────────────────────── */
+/* â”€â”€ Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-input {
   background: var(--color-bg);
   border: 1px solid var(--color-border-subtle);
@@ -588,7 +588,7 @@
 }
 .admin-textarea:focus { border-color: var(--color-blue); }
 
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-action-btn {
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-subtle);
@@ -602,11 +602,11 @@
 }
 .admin-action-btn:hover:not(:disabled) { border-color: var(--color-border); color: var(--color-text); }
 .admin-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.admin-action-btn--primary { background: var(--color-blue); color: #0D0F12; border-color: var(--color-blue); font-weight: 700; }
-.admin-action-btn--primary:hover:not(:disabled) { background: var(--color-blue-dim); color: #0D0F12; }
-.admin-action-btn--danger { color: var(--color-error); border-color: rgba(255,77,77,0.3); background: rgba(255,77,77,0.05); }
-.admin-action-btn--danger:hover:not(:disabled) { background: rgba(255,77,77,0.1); border-color: var(--color-error); }
-.admin-action-btn--unban { color: var(--color-accent); border-color: rgba(0,255,136,0.3); }
+.admin-action-btn--primary { background: var(--color-blue); color: var(--color-text-inverse); border-color: var(--color-blue); font-weight: 700; }
+.admin-action-btn--primary:hover:not(:disabled) { background: var(--color-blue-dim); color: var(--color-text-inverse); }
+.admin-action-btn--danger { color: var(--color-error); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+.admin-action-btn--danger:hover:not(:disabled) { background: rgba(239,68,68,0.1); border-color: var(--color-error); }
+.admin-action-btn--unban { color: var(--color-accent); border-color: rgba(6,182,212,0.3); }
 
 .admin-btn-group {
   display: flex;
@@ -648,7 +648,7 @@
 .admin-load-more-btn:hover:not(:disabled) { border-color: var(--color-border); }
 .admin-load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── Flags layout ─────────────────────────────────────────────────────────── */
+/* â”€â”€ Flags layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-filter-tabs { display: flex; gap: 4px; }
 .admin-filter-tab {
   background: var(--color-surface);
@@ -662,7 +662,7 @@
   transition: all var(--transition-fast);
 }
 .admin-filter-tab:hover { color: var(--color-text); border-color: var(--color-border); }
-.admin-filter-tab--active { color: var(--color-blue); border-color: var(--color-blue); background: rgba(0,191,255,0.05); }
+.admin-filter-tab--active { color: var(--color-blue); border-color: var(--color-blue); background: rgba(59,130,246,0.05); }
 
 .admin-flags-empty {
   display: flex;
@@ -696,7 +696,7 @@
   gap: 4px;
 }
 .admin-flag-row:hover { border-color: var(--color-border); background: var(--color-surface-2); }
-.admin-flag-row--selected { border-color: var(--color-blue) !important; background: rgba(0,191,255,0.04) !important; }
+.admin-flag-row--selected { border-color: var(--color-blue) !important; background: rgba(59,130,246,0.04) !important; }
 .admin-flag-row--resolved { opacity: 0.6; }
 
 .admin-flag-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -771,7 +771,7 @@
   gap: 8px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1100px) {
   .admin-stats-grid--5 { grid-template-columns: repeat(3, 1fr); }
   .admin-two-col       { grid-template-columns: 1fr; }
@@ -785,7 +785,7 @@
   .admin-users-grid    { grid-template-columns: 1fr 80px 70px; }
 }
 
-/* ── Admin user list ─────────────────────────────────────────────────────────── */
+/* â”€â”€ Admin user list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .admin-user-list { display: flex; flex-direction: column; gap: 2px; }
 
 .admin-user-row {

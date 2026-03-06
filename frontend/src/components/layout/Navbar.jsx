@@ -5,7 +5,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 import "./Navbar.css";
 
 // ── SVG Icon set ──────────────────────────────────────────────────────────────
@@ -67,8 +66,13 @@ const Icons = {
 
 export default function Navbar() {
   const { currentUser, userProfile, isAdmin, isPro, logout } = useAuth();
-  const { theme, toggle: toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  const [theme, setTheme] = useState(() =>
+    document.documentElement.getAttribute("data-theme") ||
+    localStorage.getItem("osint-theme") ||
+    "dark"
+  );
 
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -81,6 +85,13 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("osint-theme", next);
+  }
 
   async function handleLogout() {
     setProfileOpen(false);

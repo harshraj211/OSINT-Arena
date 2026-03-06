@@ -1,3 +1,5 @@
+﻿/* ── Heatmap  ─────────────────────────────────────────── */
+
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
@@ -9,23 +11,23 @@
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background-color: #ebebeb;
+  background-color: var(--color-bg-2, #18181B);
 }
 
 .heatmap-cell.intensity-1 {
-  background-color: #c6e48b;
+  background-color: rgba(6, 182, 212, 0.25);
 }
 
 .heatmap-cell.intensity-2 {
-  background-color: #7bc96f;
+  background-color: rgba(6, 182, 212, 0.5);
 }
 
 .heatmap-cell.intensity-3 {
-  background-color: #239a3b;
+  background-color: rgba(6, 182, 212, 0.75);
 }
 
 .heatmap-cell.intensity-4 {
-  background-color: #196127;
+  background-color: #06B6D4;
 }
 
 .heatmap-legend {
@@ -38,6 +40,12 @@
 .legend-gradient {
   width: 150px;
   height: 20px;
-  background: linear-gradient(to right, #c6e48b, #7bc96f, #239a3b, #196127);
+  background: linear-gradient(
+    to right,
+    rgba(6, 182, 212, 0.25),
+    rgba(6, 182, 212, 0.5),
+    rgba(6, 182, 212, 0.75),
+    #06B6D4
+  );
   border-radius: 3px;
 }

@@ -104,3 +104,7 @@ exports.checkCertEligibility = require("./certifications/checkCertEligibility");
 
 // Storage validation
 exports.validateUpload = require("./storage/validateUpload");
+
+// Investigation board
+exports.verifyGraphEdge      = require("./challenges/verifyGraphEdge");
+exports.completeInvestigation = require("./challenges/completeInvestigation");

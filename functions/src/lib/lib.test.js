@@ -152,7 +152,7 @@ assert("getHeatmapColor(4) → dark", getHeatmapColor(4).className === "heatmap-
   assert("incrementHeatmapDay increments existing count", newCount === 3 && updatedMap[today] === 3);
 }
 {
-  const { updatedMap, newCount } = incrementHeatmapDay({});
+  const { updatedMap: _updatedMap, newCount } = incrementHeatmapDay({});
   assert("incrementHeatmapDay starts at 1 for new day", newCount === 1);
 }
 

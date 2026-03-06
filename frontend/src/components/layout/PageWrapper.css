@@ -1,11 +1,10 @@
-/* PageWrapper.css
-   File location: frontend/src/components/layout/PageWrapper.css */
+﻿/* ── PageWrapper  ─────────────────────────────────────── */
 
 .page-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg, #0d0f12);
+  background: var(--color-bg, #09090B);
 }
 
 .page-wrapper__content {

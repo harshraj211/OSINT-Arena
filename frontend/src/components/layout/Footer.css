@@ -1,12 +1,12 @@
-/**
- * Footer.css
+﻿/**
+ * Footer.css — v4 Signal Intelligence
  * File location: frontend/src/components/layout/Footer.css
  */
 
 .footer {
   border-top: 1px solid var(--color-border-subtle);
-  background: var(--color-surface);
-  padding: 20px 24px;
+  background: var(--color-bg);
+  padding: 24px 28px;
   margin-top: auto;
 }
 
@@ -32,11 +32,11 @@
   gap: 2px;
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 2px;
 }
 .footer-logo-bracket { color: var(--color-accent); }
-.footer-logo-text    { color: var(--color-text-muted); padding: 0 3px; }
+.footer-logo-text    { color: var(--color-text-subtle); padding: 0 3px; }
 
 .footer-copy {
   font-size: var(--text-xs);
@@ -47,7 +47,7 @@
 .footer-links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .footer-link {
@@ -56,9 +56,10 @@
   color: var(--color-text-subtle);
   text-decoration: none;
   transition: color var(--transition-fast);
+  letter-spacing: 0.02em;
 }
 .footer-link:hover {
-  color: var(--color-text-muted);
+  color: var(--color-accent);
 }
 
 @media (max-width: 480px) {

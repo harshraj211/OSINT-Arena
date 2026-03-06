@@ -3,7 +3,7 @@ const admin = require("firebase-admin")
 
 module.exports = functions.https.onCall(async (data, context) => {
   try {
-    const { userId, challengeId } = data
+    const { userId, challengeId: _challengeId } = data
 
     if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated")

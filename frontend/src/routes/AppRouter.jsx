@@ -17,7 +17,8 @@ const CertVerify       = lazy(() => import("../pages/CertVerify"));
 const NotFound         = lazy(() => import("../pages/NotFound"));
 const Dashboard        = lazy(() => import("../pages/Dashboard"));
 const Challenges       = lazy(() => import("../pages/Challenges"));
-const ChallengeSolve   = lazy(() => import("../pages/ChallengeSolve"));
+const ChallengeSolve          = lazy(() => import("../pages/ChallengeSolve"));
+const InvestigationChallenge  = lazy(() => import("../pages/InvestigationChallenge"));
 const Profile          = lazy(() => import("../pages/Profile"));
 const EditProfile      = lazy(() => import("../pages/EditProfile"));
 const Leaderboard      = lazy(() => import("../pages/Leaderboard"));
@@ -28,6 +29,7 @@ const AdminDashboard   = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminUsers       = lazy(() => import("../pages/admin/AdminUsers"));
 const AdminFlags       = lazy(() => import("../pages/admin/AdminFlags"));
 const AdminChallenges  = lazy(() => import("../pages/admin/AdminChallenges"));
+const AdminAnalytics   = lazy(() => import("../pages/admin/AdminAnalytics"));
 
 import PrivateRoute from "./PrivateRoute";
 import ProRoute     from "./ProRoute";
@@ -64,6 +66,7 @@ export default function AppRouter() {
           <Route path="/dashboard"      element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/challenges"     element={<PrivateRoute><Challenges /></PrivateRoute>} />
           <Route path="/challenges/:slug" element={<PrivateRoute><ChallengeSolve /></PrivateRoute>} />
+          <Route path="/investigate/:challengeId" element={<PrivateRoute><InvestigationChallenge /></PrivateRoute>} />
           <Route path="/profile"        element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/profile/edit"   element={<PrivateRoute><EditProfile /></PrivateRoute>} />
           <Route path="/profile/:username" element={<PrivateRoute><Profile /></PrivateRoute>} />
@@ -76,6 +79,7 @@ export default function AppRouter() {
           <Route path="/admin" element={<ModRoute><AdminLayout /></ModRoute>}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard"  element={<AdminDashboard />} />
+            <Route path="analytics"  element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
             <Route path="challenges" element={<AdminChallenges />} />
             <Route path="users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="flags"      element={<AdminFlags />} />

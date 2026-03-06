@@ -7,7 +7,7 @@
  */
 import { useState, useEffect, useRef } from "react";
 import {
-  collection, query, orderBy, onSnapshot,
+  collection, query, onSnapshot,
   doc, addDoc, updateDoc, deleteDoc,
   serverTimestamp, where,
 } from "firebase/firestore";
@@ -18,6 +18,7 @@ import { hashAnswer } from "../../lib/hashAnswer";
 import "./AdminChallenges.css";
 
 const DIFFICULTIES  = ["easy", "medium", "hard"];
+const CHALLENGE_TYPES = ["standard", "investigation"];
 const CATEGORIES    = ["search","domain-recon","image-osint","metadata","network-osint",
                         "social-media","web-archive","geolocation","code-recon",
                         "dark-web","tools","people-search","data-breach","other"];
@@ -25,7 +26,7 @@ const VISIBILITIES  = ["public", "draft", "private"];
 const MEDIA_TYPES   = ["none","image","video","audio","file"];
 
 const EMPTY_FORM = {
-  title: "", description: "", difficulty: "easy", category: "search",
+  title: "", description: "", type: "standard", difficulty: "easy", category: "search",
   basePoints: 100, tags: "", visibility: "draft", flag: "", hints: [""],
   timeLimit: "", mediaType: "none", mediaURL: "",
 };
@@ -46,14 +47,28 @@ export default function AdminChallenges() {
 
   // Real-time challenges listener
   useEffect(() => {
+    setLoading(true);
     const q = showDeleted
-      ? query(collection(db, "challenges"), where("isDeleted", "==", true), orderBy("createdAt", "desc"))
-      : query(collection(db, "challenges"), where("isDeleted", "==", false), orderBy("createdAt", "desc"));
+      ? query(collection(db, "challenges"), where("isDeleted", "==", true))
+      : query(collection(db, "challenges"), where("isDeleted", "==", false));
 
-    const unsub = onSnapshot(q, snap => {
-      setChallenges(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        items.sort((a, b) => {
+          const aMs = a.createdAt?.toMillis?.() || 0;
+          const bMs = b.createdAt?.toMillis?.() || 0;
+          return bMs - aMs;
+        });
+        setChallenges(items);
+        setLoading(false);
+      },
+      (err) => {
+        setError(`Load failed: ${err.message}`);
+        setLoading(false);
+      }
+    );
     return unsub;
   }, [showDeleted]);
 
@@ -68,6 +83,7 @@ export default function AdminChallenges() {
     setForm({
       title:       ch.title       || "",
       description: ch.description || "",
+      type:        ch.type        || "standard",
       difficulty:  ch.difficulty  || "easy",
       category:    ch.category    || "search",
       basePoints:  ch.basePoints  || 100,
@@ -125,6 +141,7 @@ export default function AdminChallenges() {
       const data = {
         title:       form.title.trim(),
         description: form.description.trim(),
+        type:        form.type,
         difficulty:  form.difficulty,
         category:    form.category,
         basePoints:  Number(form.basePoints) || 100,
@@ -143,7 +160,7 @@ export default function AdminChallenges() {
       };
 
       if (form.flag.trim()) {
-        data.flagHash = hashAnswer(form.flag.trim().toLowerCase());
+        data.flagHash = await hashAnswer(form.flag.trim().toLowerCase());
       }
 
       if (modal === "create") {
@@ -212,6 +229,10 @@ export default function AdminChallenges() {
       {/* Search */}
       <input className="ac-search" placeholder="Search challenges..."
         value={search} onChange={e => setSearch(e.target.value)} />
+
+      {!modal && error && (
+        <div className="ac-modal-error" style={{ marginBottom: 12 }}>⚠ {error}</div>
+      )}
 
       {/* Table */}
       {loading ? (
@@ -303,6 +324,13 @@ export default function AdminChallenges() {
 
               {/* Row: difficulty + category + points */}
               <div className="ac-field-row">
+                <div className="ac-field">
+                  <label>Challenge Type</label>
+                  <select className="ac-select" value={form.type}
+                    onChange={e => setField("type", e.target.value)}>
+                    {CHALLENGE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
                 <div className="ac-field">
                   <label>Difficulty</label>
                   <select className="ac-select" value={form.difficulty}

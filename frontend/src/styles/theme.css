@@ -1,12 +1,12 @@
 /**
- * theme.css — OSINT Arena Design System v3
- * Clean, professional. No neon. No glow. No scanlines.
- * Inspired by: Linear, LeetCode, HackTheBox (clean version), Notion
+ * theme.css — OSINT Arena Design System v4
+ * "Signal Intelligence" — clean, premium, OSINT-grade.
+ * Inspired by: Palantir, Linear, Vercel, shadcn/ui
  * Font: "Inter" display + "JetBrains Mono" for data/code
  * File location: frontend/src/styles/theme.css
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 /* ── DARK THEME ─────────────────────────────────────────────────────────── */
 :root,
@@ -14,53 +14,64 @@
   --font-body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono:    "JetBrains Mono", "Fira Code", "Consolas", monospace;
 
-  /* Backgrounds — subtle layering, not pitch black */
-  --color-bg:        #0F1117;
-  --color-bg-2:      #13151C;
-  --color-surface:   #181B24;
-  --color-surface-2: #1E2130;
-  --color-surface-3: #232637;
+  /* Backgrounds — zinc-based, sophisticated depth */
+  --color-bg:        #09090B;
+  --color-bg-2:      #0C0D10;
+  --color-surface:   #131316;
+  --color-surface-2: #1A1A1F;
+  --color-surface-3: #222228;
 
-  /* Borders — very subtle */
-  --color-border:        #252836;
-  --color-border-subtle: #1C1F2E;
-  --color-border-strong: #333650;
+  /* Borders — zinc, clean */
+  --color-border:        #27272A;
+  --color-border-subtle: #1C1C1F;
+  --color-border-strong: #3F3F46;
 
-  /* Accent — clean blue, no glow */
-  --color-accent:      #4F8EF7;
-  --color-accent-dim:  #3D7AE8;
-  --color-accent-bg:   rgba(79,142,247,0.08);
-  --color-accent-text: #4F8EF7;
+  /* Accent — cyan/teal: intelligence, analysis, clarity */
+  --color-accent:      #06B6D4;
+  --color-accent-dim:  #0891B2;
+  --color-accent-bg:   rgba(6,182,212,0.08);
+  --color-accent-text: #22D3EE;
 
-  /* Success green — muted, not neon */
-  --color-green:     #3DD68C;
-  --color-green-dim: #2EC47A;
-  --color-green-bg:  rgba(61,214,140,0.08);
+  /* Secondary accent — indigo for special UI elements */
+  --color-indigo:     #818CF8;
+  --color-indigo-bg:  rgba(129,140,248,0.08);
+
+  /* Success */
+  --color-green:     #22C55E;
+  --color-green-dim: #16A34A;
+  --color-green-bg:  rgba(34,197,94,0.08);
 
   /* Status */
-  --color-warning:  #F5A623;
-  --color-error:    #E85D5D;
-  --color-success:  #3DD68C;
+  --color-warning:  #EAB308;
+  --color-error:    #EF4444;
+  --color-success:  #22C55E;
+  --color-blue:     #3B82F6;
+  --color-blue-dim: #2563EB;
 
   /* Difficulty */
-  --color-easy:   #3DD68C;
-  --color-medium: #F5A623;
-  --color-hard:   #E85D5D;
+  --color-easy:   #22C55E;
+  --color-medium: #EAB308;
+  --color-hard:   #EF4444;
 
-  /* Text */
-  --color-text:         #E2E8F0;
-  --color-text-muted:   #7C8599;
-  --color-text-subtle:  #404659;
-  --color-text-inverse: #0F1117;
+  /* Text — high contrast zinc scale */
+  --color-text:         #FAFAFA;
+  --color-text-muted:   #A1A1AA;
+  --color-text-subtle:  #52525B;
+  --color-text-inverse: #09090B;
 
-  /* No shadows/glows — just depth */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+  /* Shadows — layered depth */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+  --shadow-accent: 0 4px 20px rgba(6,182,212,0.15);
 
   /* Navbar */
-  --navbar-bg:     rgba(15,17,23,0.95);
-  --navbar-border: #1E2130;
+  --navbar-bg:     rgba(9,9,11,0.92);
+  --navbar-border: #1C1C1F;
+
+  /* Glass */
+  --glass-bg: rgba(19,19,22,0.75);
+  --glass-border: rgba(255,255,255,0.06);
 }
 
 /* ── LIGHT THEME ─────────────────────────────────────────────────────────── */
@@ -68,49 +79,58 @@
   --font-body:  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono:  "JetBrains Mono", "Fira Code", "Consolas", monospace;
 
-  --color-bg:        #F8F9FC;
+  --color-bg:        #FAFAFA;
   --color-bg-2:      #FFFFFF;
   --color-surface:   #FFFFFF;
-  --color-surface-2: #F3F4F8;
-  --color-surface-3: #ECEEF4;
+  --color-surface-2: #F4F4F5;
+  --color-surface-3: #E4E4E7;
 
-  --color-border:        #E2E5EE;
-  --color-border-subtle: #ECEEF4;
-  --color-border-strong: #CDD0DC;
+  --color-border:        #E4E4E7;
+  --color-border-subtle: #F4F4F5;
+  --color-border-strong: #D4D4D8;
 
-  --color-accent:      #2563EB;
-  --color-accent-dim:  #1D55D8;
-  --color-accent-bg:   rgba(37,99,235,0.06);
-  --color-accent-text: #2563EB;
+  --color-accent:      #0891B2;
+  --color-accent-dim:  #0E7490;
+  --color-accent-bg:   rgba(8,145,178,0.06);
+  --color-accent-text: #0891B2;
+
+  --color-indigo:     #6366F1;
+  --color-indigo-bg:  rgba(99,102,241,0.06);
 
   --color-green:     #16A34A;
   --color-green-dim: #15803D;
   --color-green-bg:  rgba(22,163,74,0.06);
 
-  --color-warning:  #D97706;
+  --color-warning:  #CA8A04;
   --color-error:    #DC2626;
   --color-success:  #16A34A;
+  --color-blue:     #2563EB;
+  --color-blue-dim: #1D4ED8;
 
   --color-easy:   #16A34A;
-  --color-medium: #D97706;
+  --color-medium: #CA8A04;
   --color-hard:   #DC2626;
 
-  --color-text:         #111827;
-  --color-text-muted:   #6B7280;
-  --color-text-subtle:  #9CA3AF;
-  --color-text-inverse: #FFFFFF;
+  --color-text:         #09090B;
+  --color-text-muted:   #52525B;
+  --color-text-subtle:  #A1A1AA;
+  --color-text-inverse: #FAFAFA;
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
+  --shadow-accent: 0 4px 20px rgba(8,145,178,0.12);
 
-  --navbar-bg:     rgba(248,249,252,0.95);
-  --navbar-border: #E2E5EE;
+  --navbar-bg:     rgba(250,250,250,0.92);
+  --navbar-border: #E4E4E7;
+
+  --glass-bg: rgba(255,255,255,0.75);
+  --glass-border: rgba(0,0,0,0.06);
 }
 
 /* ── SHARED TOKENS ────────────────────────────────────────────────────────── */
 :root {
-  /* Type scale — Inter-optimized */
+  /* Type scale — fluid, Inter-optimized */
   --text-xs:   0.6875rem;
   --text-sm:   0.8125rem;
   --text-base: 0.9375rem;
@@ -119,6 +139,7 @@
   --text-2xl:  1.5rem;
   --text-3xl:  1.875rem;
   --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
 
   /* Weights */
   --weight-regular:  400;
@@ -127,18 +148,18 @@
   --weight-bold:     700;
   --weight-black:    800;
 
-  /* Radii — subtle, not round */
-  --radius-xs:   3px;
+  /* Radii — modern, consistent */
+  --radius-xs:   4px;
   --radius-sm:   6px;
-  --radius-md:   8px;
-  --radius-lg:   12px;
-  --radius-xl:   16px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
   --radius-full: 9999px;
 
-  /* Transitions */
-  --transition-fast:   0.1s ease;
-  --transition-normal: 0.2s ease;
-  --transition-slow:   0.35s ease;
+  /* Transitions — snappy micro-interactions */
+  --transition-fast:   0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Layout */
   --navbar-height: 56px;

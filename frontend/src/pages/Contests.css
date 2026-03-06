@@ -1,5 +1,5 @@
-/**
- * Contests.css
+﻿/**
+ * Contests.css — v4 Signal Intelligence
  * File location: frontend/src/pages/Contests.css
  */
 
@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 24px;
   min-height: calc(100vh - 130px);
-  animation: fadeUp 0.3s ease both;
+  animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
@@ -26,9 +26,10 @@
 .contests-title {
   font-family: var(--font-mono);
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text);
   margin: 0 0 4px;
+  letter-spacing: -0.03em;
 }
 .contests-subtitle {
   font-size: var(--text-sm);
@@ -45,8 +46,8 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 77, 77, 0.08);
-  border: 1px solid rgba(255, 77, 77, 0.3);
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.2);
   border-radius: var(--radius-full);
   padding: 6px 14px;
   font-family: var(--font-mono);
@@ -74,14 +75,14 @@
   font-size: var(--text-sm);
   font-family: var(--font-mono);
 }
-.contests-feedback--ok  { background: var(--color-accent-bg); border: 1px solid var(--color-accent-bg); color: var(--color-accent); }
-.contests-feedback--err { background: rgba(255,77,77,0.06); border: 1px solid rgba(255,77,77,0.2); color: var(--color-error); }
+.contests-feedback--ok  { background: var(--color-accent-bg); border: 1px solid rgba(6,182,212,0.15); color: var(--color-accent); }
+.contests-feedback--err { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); color: var(--color-error); }
 
 /* ── Tabs ─────────────────────────────────────────────────────────────────── */
 .contests-tabs {
   display: flex;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 4px;
   gap: 4px;
@@ -102,8 +103,8 @@
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
-.contests-tab:hover { color: var(--color-text); background: var(--color-surface-2); }
-.contests-tab--active { background: var(--color-surface-2); color: var(--color-text); }
+.contests-tab:hover { color: var(--color-text); background: var(--color-bg-2); }
+.contests-tab--active { background: var(--color-bg-2); color: var(--color-text); font-weight: 600; }
 .contests-tab-live-dot {
   width: 6px;
   height: 6px;
@@ -122,20 +123,20 @@
 /* ── Contest card ─────────────────────────────────────────────────────────── */
 .contest-card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   animation: cardIn 0.25s ease both;
   transition: border-color var(--transition-fast);
 }
-.contest-card:hover { border-color: var(--color-border); }
+.contest-card:hover { border-color: var(--color-border-strong); }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .contest-card--live {
-  border-color: rgba(255, 77, 77, 0.3);
-  box-shadow: 0 0 24px rgba(255, 77, 77, 0.06);
+  border-color: rgba(239,68,68,0.25);
+  border-top: 2px solid var(--color-error);
 }
 
 /* Live top bar */
@@ -143,8 +144,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 77, 77, 0.08);
-  border-bottom: 1px solid rgba(255, 77, 77, 0.15);
+  background: rgba(239,68,68,0.06);
+  border-bottom: 1px solid rgba(239,68,68,0.1);
   padding: 7px 20px;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -288,7 +289,7 @@
 }
 .contest-action-btn--register {
   background: var(--color-accent);
-  color: var(--color-bg);
+  color: var(--color-text-inverse);
 }
 .contest-action-btn--register:hover:not(:disabled) {
   background: var(--color-accent-dim);
@@ -299,24 +300,19 @@
 .contest-action-btn--enter {
   background: var(--color-error);
   color: #fff;
-  animation: enterPulse 2s ease infinite;
-}
-@keyframes enterPulse {
-  0%,100% { box-shadow: none; }
-  50%      { box-shadow: 0 0 0 6px rgba(255,77,77,0); }
 }
 .contest-action-btn--ghost {
-  background: var(--color-surface-2);
+  background: var(--color-bg-2);
   color: var(--color-text-muted);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
 }
-.contest-action-btn--ghost:hover { border-color: var(--color-border); color: var(--color-text); }
+.contest-action-btn--ghost:hover { border-color: var(--color-border-strong); color: var(--color-text); }
 .contest-action-btn--upgrade {
-  background: var(--color-accent-glow);
+  background: var(--color-accent-bg);
   color: var(--color-accent);
-  border: 1px solid var(--color-accent-bg);
+  border: 1px solid rgba(6,182,212,0.15);
 }
-.contest-action-btn--upgrade:hover { background: var(--color-accent-bg); }
+.contest-action-btn--upgrade:hover { background: rgba(6,182,212,0.12); }
 
 .contest-action-registered {
   display: flex;
@@ -327,8 +323,8 @@
   font-weight: 600;
   color: var(--color-accent);
   padding: 10px 18px;
-  background: var(--color-accent-glow);
-  border: 1px solid var(--color-accent-bg);
+  background: var(--color-accent-bg);
+  border: 1px solid rgba(6,182,212,0.15);
   border-radius: var(--radius-md);
   min-width: 140px;
   justify-content: center;
@@ -345,8 +341,8 @@
   display: flex;
   gap: 24px;
   padding: 12px 24px;
-  border-top: 1px solid var(--color-border-subtle);
-  background: var(--color-surface-2);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-2);
 }
 .contest-podium-entry {
   display: flex;
@@ -360,7 +356,7 @@
   color: var(--color-text-muted);
   text-decoration: none;
 }
-.contest-podium-name:hover { color: var(--color-blue); }
+.contest-podium-name:hover { color: var(--color-accent); }
 .contest-podium-score { color: var(--color-text-subtle); }
 
 /* ── Skeleton ─────────────────────────────────────────────────────────────── */
@@ -368,7 +364,7 @@
 .contests-skeleton-card {
   height: 140px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   animation: shimmer 1.4s ease infinite;
 }

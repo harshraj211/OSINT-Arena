@@ -1,20 +1,17 @@
-/**
- * PageWrapper.css
- * File location: frontend/src/components/layout/PageWrapper.css
- */
+﻿/* ── PageWrapper (Pagerapper)  ────────────────────────── */
 
 .page-shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background: var(--color-bg);
-  transition: background 0.25s ease;
+  transition: background var(--transition-normal, 0.25s ease);
 }
 
 .page-main {
   flex: 1;
   width: 100%;
-  max-width: var(--content-max);
+  max-width: var(--content-max, 1200px);
   margin: 0 auto;
   padding: 32px 24px;
   box-sizing: border-box;

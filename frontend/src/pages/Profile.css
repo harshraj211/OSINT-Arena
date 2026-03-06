@@ -1,36 +1,38 @@
-/* Profile.css — v2 Premium Redesign
-   File location: frontend/src/pages/Profile.css */
+﻿/**
+ * Profile.css — v4 Signal Intelligence
+ * File location: frontend/src/pages/Profile.css
+ */
 
 /* ── Page shell ──────────────────────────────────────────────────────────────── */
 .profile-page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px 64px;
-  animation: profile-in 0.4s ease both;
+  animation: profile-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes profile-in {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Hero ─────────────────────────────────────────────────────────────────────── */
 .profile-hero {
   position: relative;
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-2) 100%);
+  border-top: 2px solid var(--color-accent);
+  background: var(--color-surface);
   overflow: hidden;
   padding: 36px 40px;
   margin-bottom: 20px;
-  box-shadow: none;
 }
 
 .profile-hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 0% 50%, color-mix(in srgb, var(--tier-color) 8%, transparent), transparent 70%);
+  background: radial-gradient(ellipse 50% 70% at 0% 50%, rgba(6,182,212,0.03), transparent 70%);
   pointer-events: none;
 }
 
@@ -38,11 +40,11 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
-  opacity: 0.4;
+  opacity: 0.15;
 }
 
 .profile-hero-content {
@@ -73,14 +75,13 @@
   inset: -4px;
   border-radius: 50%;
   border: 2px solid var(--tier-color, var(--color-accent));
-  box-shadow: 0 0 20px color-mix(in srgb, var(--tier-color) 40%, transparent),
-              0 0 40px color-mix(in srgb, var(--tier-color) 20%, transparent);
+  box-shadow: none;
   animation: ring-pulse 3s ease-in-out infinite;
 }
 
 @keyframes ring-pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+  50%       { opacity: 0.5; }
 }
 
 /* Identity */
@@ -102,7 +103,7 @@
   font-weight: 800;
   color: var(--color-text);
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.03em;
   font-family: var(--font-mono);
 }
 
@@ -110,8 +111,8 @@
   font-size: 10px;
   font-weight: 700;
   padding: 3px 8px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, #f59e0b, #f97316);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning);
   color: var(--color-bg);
   letter-spacing: 1px;
 }
@@ -119,8 +120,8 @@
 .profile-own-badge {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   color: var(--color-text-subtle);
 }
 
@@ -130,7 +131,6 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--tier-color);
-  
   margin-bottom: 6px;
   font-family: var(--font-mono);
 }
@@ -154,7 +154,6 @@
   letter-spacing: -2px;
   font-family: var(--font-mono);
   color: var(--tier-color);
-  
   margin-bottom: 2px;
 }
 
@@ -169,16 +168,16 @@
 .profile-elo-progress {
   height: 3px;
   background: var(--color-border);
-  border-radius: 2px;
+  border-radius: var(--radius-full);
   overflow: hidden;
   margin-bottom: 6px;
 }
 
 .profile-elo-bar {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--radius-full);
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 8px currentColor;
+  box-shadow: none;
 }
 
 .profile-elo-next {
@@ -198,17 +197,16 @@
 .profile-stat {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 18px 16px;
   text-align: center;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
   cursor: default;
 }
 
 .profile-stat:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255,255,255,0.12);
-  box-shadow: none;
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
 }
 
 .profile-stat-value {
@@ -226,7 +224,6 @@
 
 .profile-stat-value--accent {
   color: var(--color-accent);
-  
 }
 
 .profile-stat-icon { font-size: 16px; }
@@ -253,12 +250,12 @@
 .profile-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 24px;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--transition-fast);
 }
 
-.profile-card:hover { border-color: rgba(255,255,255,0.1); }
+.profile-card:hover { border-color: var(--color-border-strong); }
 .profile-card--flush { padding: 0; overflow: hidden; }
 
 .profile-card-header {
@@ -310,13 +307,12 @@
   width: 14px;
   height: 14px;
   border-radius: 3px;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition: transform 0.15s ease;
   cursor: default;
 }
 
 .profile-heatmap-cell:hover {
-  transform: scale(1.4);
-  filter: brightness(1.3);
+  transform: scale(1.5);
   z-index: 1;
 }
 
@@ -351,7 +347,7 @@
   border: none;
   cursor: pointer;
   position: relative;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -373,14 +369,13 @@
   right: 0;
   height: 2px;
   background: var(--color-accent);
-  box-shadow: none;
   border-radius: 2px 2px 0 0;
 }
 
 .profile-tab-count {
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   background: var(--color-accent-bg);
   color: var(--color-accent);
   font-weight: 700;
@@ -397,18 +392,17 @@
   gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background 0.15s;
+  transition: background var(--transition-fast);
 }
 
 .profile-activity-row:last-child { border-bottom: none; }
-.profile-activity-row:hover { background: rgba(255,255,255,0.02); border-radius: 8px; }
+.profile-activity-row:hover { background: var(--color-bg-2); border-radius: var(--radius-md); }
 
 .profile-activity-diff-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 6px currentColor;
 }
 
 .profile-activity-info {
@@ -454,22 +448,22 @@
 }
 
 .profile-badge {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 16px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: rgba(255,255,255,0.02);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  background: var(--color-surface);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
   cursor: default;
 }
 
 .profile-badge:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--color-accent-bg);
-  box-shadow: none;
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
 }
 
 .profile-badge-icon { font-size: 28px; }
@@ -495,13 +489,13 @@
   flex: 1;
   height: 6px;
   background: var(--color-border);
-  border-radius: 3px;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .profile-diff-bar {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--radius-full);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 2px;
 }
@@ -615,7 +609,6 @@
 .profile-badge--locked:hover {
   transform: none;
   border-color: var(--color-border);
-  box-shadow: none;
 }
 
 .profile-badge-lock {
@@ -624,10 +617,6 @@
   bottom: 6px;
   right: 6px;
   opacity: 0.6;
-}
-
-.profile-badge {
-  position: relative; /* needed for lock icon */
 }
 
 /* ── Empty state link ────────────────────────────────────────────────────────── */
@@ -649,40 +638,46 @@
 
 /* Edit profile button */
 .profile-edit-btn {
-  padding: 5px 14px; border-radius: 7px;
+  padding: 5px 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-accent-bg);
   background: var(--color-accent-bg);
   color: var(--color-accent);
-  font-size: 12px; font-weight: 600;
-  text-decoration: none; transition: all 0.15s;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-fast);
 }
 .profile-edit-btn:hover {
-  background: var(--color-accent-bg);
-  border-color: var(--color-accent-bg);
+  background: rgba(6,182,212,0.15);
+  border-color: rgba(6,182,212,0.25);
 }
 
-/* Follow button on other people's profiles */
+/* Follow button on other profiles */
 .profile-follow-btn {
-  padding: 5px 14px; border-radius: 7px;
+  padding: 5px 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-accent-bg);
   background: var(--color-accent-bg);
   color: var(--color-accent);
-  font-size: 12px; font-weight: 700;
-  cursor: pointer; transition: all 0.15s;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 .profile-follow-btn:hover:not(:disabled) {
-  background: var(--color-accent-bg);
-  border-color: var(--color-accent-bg);
+  background: rgba(6,182,212,0.15);
+  border-color: rgba(6,182,212,0.25);
 }
 .profile-follow-btn--following {
-  border-color: rgba(255,255,255,0.1);
-  background: var(--color-border-subtle);
+  border-color: var(--color-border);
+  background: var(--color-bg-2);
   color: var(--color-text-subtle);
 }
 .profile-follow-btn--following:hover:not(:disabled) {
-  border-color: rgba(255,77,77,0.3);
-  background: rgba(255,77,77,0.06);
-  color: var(--color-hard);
+  border-color: rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.06);
+  color: var(--color-error);
 }
 .profile-follow-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 

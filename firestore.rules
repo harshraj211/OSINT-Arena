@@ -5,8 +5,25 @@ service cloud.firestore {
     // ── Helpers ───────────────────────────────────────────────────────────────
     function isAuth()     { return request.auth != null; }
     function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
-    function isAdmin()    { return isAuth() && request.auth.token.role == 'admin'; }
-    function isMod()      { return isAuth() && (request.auth.token.role == 'mod' || request.auth.token.role == 'moderator' || isAdmin()); }
+
+    // Role checks support BOTH JWT custom claims and Firestore users/{uid}.role.
+    // This prevents temporary permission-denied states when a user role was updated
+    // in Firestore but token claims have not been refreshed yet.
+    function roleFromToken() {
+      return isAuth() && request.auth.token.role is string ? request.auth.token.role : null;
+    }
+    function roleFromProfile() {
+      return isAuth()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role is string
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
+    }
+    function hasRole(role) {
+      return roleFromToken() == role || roleFromProfile() == role;
+    }
+    function isAdmin()    { return isAuth() && hasRole('admin'); }
+    function isMod()      { return isAuth() && (hasRole('mod') || hasRole('moderator') || isAdmin()); }
     function isVerified() { return isAuth() && request.auth.token.email_verified == true; }
     function hasOnly(fields) { return request.resource.data.keys().hasOnly(fields); }
 

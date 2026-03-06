@@ -139,7 +139,7 @@ function isValidIp(_ip) {
  *   rateLimitInfo: object
  * }}
  */
-function runAntiCheatChecks({ timeTaken, difficulty, recentAttemptTimestamps, nowMs, ip }) {
+function runAntiCheatChecks({ timeTaken, difficulty, recentAttemptTimestamps, nowMs, _ip }) {
   // 1. Validate time
   const timeValidation = validateTimeTaken(timeTaken);
   if (!timeValidation.valid) {

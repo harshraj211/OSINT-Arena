@@ -1,5 +1,5 @@
-/**
- * NotFound.css
+﻿/**
+ * NotFound.css — v4 Signal Intelligence
  * File location: frontend/src/pages/NotFound.css
  */
 
@@ -17,11 +17,10 @@
 .notfound-bg-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
+  background-size: 32px 32px;
   pointer-events: none;
+  opacity: 0.3;
 }
 
 .notfound-content {
@@ -46,9 +45,10 @@
 .notfound-title {
   font-family: var(--font-mono);
   font-size: var(--text-2xl);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text);
   margin: 0;
+  letter-spacing: -0.03em;
 }
 
 .notfound-sub {
@@ -68,7 +68,7 @@
 
 .notfound-btn {
   background: var(--color-accent);
-  color: #0D0F12;
+  color: var(--color-text-inverse);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -79,7 +79,7 @@
 }
 .notfound-btn:hover {
   background: var(--color-accent-dim);
-  color: #0D0F12;
+  color: var(--color-text-inverse);
   transform: translateY(-1px);
 }
 
@@ -91,11 +91,11 @@
   font-weight: 500;
   padding: 10px 20px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   text-decoration: none;
   transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 .notfound-btn-ghost:hover {
-  border-color: var(--color-border);
+  border-color: var(--color-border-strong);
   color: var(--color-text);
 }
