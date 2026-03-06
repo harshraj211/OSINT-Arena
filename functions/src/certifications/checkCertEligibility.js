@@ -196,7 +196,7 @@ exports.checkCertEligibility = onCall({ enforceAppCheck: false }, async (request
     eloAtIssue:       user.elo || 0,
     solvedAtIssue:    easySolved + mediumSolved + hardSolved,
     // Verification URL (used by CertVerify page)
-    verifyUrl: `https://osintarena.com/verify/${certId}`,
+    verifyUrl: `https://pwngrid.com/verify/${certId}`,
   };
 
   const batch = db.batch();

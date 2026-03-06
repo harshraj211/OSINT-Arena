@@ -1,4 +1,4 @@
-# OSINT Arena
+# PwnGrid
 
 A competitive OSINT (Open-Source Intelligence) training platform with ELO rankings, timed contests, streak tracking, and verifiable certifications.
 

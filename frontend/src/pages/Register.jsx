@@ -72,7 +72,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-brand">[ OSINT ARENA ]</div>
+        <div className="auth-brand">[ PWNGRID ]</div>
         <h1 className="auth-title">Create account</h1>
         <p className="auth-sub">Join the intelligence community.</p>
 

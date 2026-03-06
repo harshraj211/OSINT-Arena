@@ -166,7 +166,7 @@ export default function Dashboard() {
         {totalSolved === 0 && (
           <div className="dash-welcome-banner">
             <div className="dash-welcome-text">
-              <span className="dash-welcome-title">👋 Welcome to OSINT Arena</span>
+              <span className="dash-welcome-title">👋 Welcome to PwnGrid</span>
               <span className="dash-welcome-sub">Start your first challenge to begin your intelligence journey and earn your first ELO points.</span>
             </div>
             <Link to="/challenges" className="dash-welcome-cta">Begin →</Link>

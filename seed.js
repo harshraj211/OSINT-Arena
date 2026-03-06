@@ -483,7 +483,7 @@ async function seed() {
   const args  = process.argv.slice(2);
   const reset = args.includes("--reset");
 
-  console.log("🌱  OSINT Arena — Challenge Seed Script");
+  console.log("🌱  PwnGrid — Challenge Seed Script");
   console.log(`   Challenges to seed: ${CHALLENGES.length}`);
   console.log(`   Reset mode: ${reset ? "YES — will delete existing challenges" : "NO"}\n`);
 

@@ -1,4 +1,4 @@
-# Context — OSINT Arena
+# Context — PwnGrid
 
 Date: 2026-02-28
 
@@ -99,7 +99,7 @@ Firebase rules and indexes
 
 ## What is this project about?
 
-OSINT Arena is a competitive Open-Source INTelligence (OSINT) learning and challenge platform. It lets users solve OSINT-style puzzles and challenges to earn ELO points, badges, and certifications. The platform supports:
+PwnGrid is a competitive Open-Source INTelligence (OSINT) learning and challenge platform. It lets users solve OSINT-style puzzles and challenges to earn ELO points, badges, and certifications. The platform supports:
 
 - Single challenges and multi-question contests (time-limited)
 - Leaderboards: global, weekly, and monthly rankings

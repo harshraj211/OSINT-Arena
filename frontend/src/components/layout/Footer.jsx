@@ -18,7 +18,7 @@ export default function Footer() {
         <div className="footer-left">
           <span className="footer-logo">
             <span className="footer-logo-bracket">[</span>
-            <span className="footer-logo-text">OSINT ARENA</span>
+            <span className="footer-logo-text">PWNGRID</span>
             <span className="footer-logo-bracket">]</span>
           </span>
           <span className="footer-copy">© {year} · All rights reserved</span>
@@ -29,7 +29,7 @@ export default function Footer() {
           <a href="/terms"     className="footer-link">Terms</a>
           <a href="/privacy"   className="footer-link">Privacy</a>
           <a
-            href="https://github.com/osint-arena"
+            href="https://github.com/pwngrid"
             className="footer-link"
             target="_blank"
             rel="noopener noreferrer"

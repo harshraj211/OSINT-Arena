@@ -100,7 +100,7 @@ module.exports = functions.pubsub
       // ── 4. Format start time for email ────────────────────────────────────
       const startDate = new Date(contest.startTime);
       const startTimeFormatted = startDate.toUTCString().replace(" GMT", " UTC");
-      const contestUrl = `https://osintarena.com/contests/${contestId}`;
+      const contestUrl = `https://pwngrid.com/contests/${contestId}`;
 
       // ── 5. Send emails ────────────────────────────────────────────────────
       const { sent, failed } = await sendBulkEmails(

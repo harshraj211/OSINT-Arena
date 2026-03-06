@@ -1,5 +1,5 @@
 /**
- * nodeTypes.js — OSINT Arena Investigation Board
+ * nodeTypes.js — PwnGrid Investigation Board
  * Defines the 10 preset node categories with icons, colors, and metadata.
  * File location: frontend/src/components/investigation/nodeTypes.js
  */

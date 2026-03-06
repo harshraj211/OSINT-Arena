@@ -20,8 +20,8 @@ if (API_KEY) {
   console.warn("sendgrid.js: SENDGRID_API_KEY not set — emails will not send");
 }
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@osintarena.com";
-const FROM_NAME  = "OSINT Arena";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@pwngrid.com";
+const FROM_NAME  = "PwnGrid";
 
 // ── Email Templates ───────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ function contestReminderTemplate({ username, contestTitle, contestDescription, s
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contest Reminder — OSINT Arena</title>
+  <title>Contest Reminder — PwnGrid</title>
 </head>
 <body style="margin:0;padding:0;background:#0D0F12;font-family:'Inter',Arial,sans-serif;color:#E6EDF3;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0D0F12;padding:40px 20px;">
@@ -53,7 +53,7 @@ function contestReminderTemplate({ username, contestTitle, contestDescription, s
           <!-- Header -->
           <tr>
             <td style="padding:32px 40px;border-bottom:1px solid #30363D;">
-              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">OSINT ARENA</span>
+              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">PWNGRID</span>
             </td>
           </tr>
 
@@ -90,8 +90,8 @@ function contestReminderTemplate({ username, contestTitle, contestDescription, s
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #30363D;">
               <p style="color:#484F58;font-size:12px;margin:0;">
-                © ${new Date().getUTCFullYear()} OSINT Arena · 
-                <a href="https://osintarena.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
+                © ${new Date().getUTCFullYear()} PwnGrid · 
+                <a href="https://pwngrid.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
               </p>
             </td>
           </tr>
@@ -129,7 +129,7 @@ function broadcastTemplate({ subject, bodyHtml }) {
           <!-- Header -->
           <tr>
             <td style="padding:32px 40px;border-bottom:1px solid #30363D;">
-              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">OSINT ARENA</span>
+              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">PWNGRID</span>
             </td>
           </tr>
 
@@ -144,8 +144,8 @@ function broadcastTemplate({ subject, bodyHtml }) {
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #30363D;">
               <p style="color:#484F58;font-size:12px;margin:0;">
-                © ${new Date().getUTCFullYear()} OSINT Arena · 
-                <a href="https://osintarena.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
+                © ${new Date().getUTCFullYear()} PwnGrid · 
+                <a href="https://pwngrid.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
               </p>
             </td>
           </tr>
@@ -236,7 +236,7 @@ function welcomeTemplate({ username }) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to OSINT Arena</title>
+  <title>Welcome to PwnGrid</title>
 </head>
 <body style="margin:0;padding:0;background:#0D0F12;font-family:'Inter',Arial,sans-serif;color:#E6EDF3;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0D0F12;padding:40px 20px;">
@@ -247,7 +247,7 @@ function welcomeTemplate({ username }) {
           <!-- Header -->
           <tr>
             <td style="padding:32px 40px;border-bottom:1px solid #30363D;">
-              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">OSINT ARENA</span>
+              <span style="font-family:'Courier New',monospace;font-size:22px;font-weight:700;color:#00FF88;letter-spacing:2px;">PWNGRID</span>
             </td>
           </tr>
 
@@ -259,7 +259,7 @@ function welcomeTemplate({ username }) {
                 Your training begins now.
               </h1>
               <p style="color:#8B949E;font-size:15px;margin:0 0 32px;line-height:1.7;">
-                OSINT Arena is a competitive intelligence training platform where you solve real-world open-source intelligence challenges, earn ELO, and climb the global rankings.
+                PwnGrid is a competitive intelligence training platform where you solve real-world open-source intelligence challenges, earn ELO, and climb the global rankings.
               </p>
             </td>
           </tr>
@@ -288,7 +288,7 @@ function welcomeTemplate({ username }) {
           <!-- CTA -->
           <tr>
             <td style="padding:0 40px 40px;">
-              <a href="https://osintarena.com/challenges"
+              <a href="https://pwngrid.com/challenges"
                  style="display:inline-block;background:#00FF88;color:#0D0F12;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.5px;">
                 Start Solving →
               </a>
@@ -300,8 +300,8 @@ function welcomeTemplate({ username }) {
             <td style="padding:24px 40px;border-top:1px solid #30363D;">
               <p style="color:#484F58;font-size:12px;margin:0;line-height:1.6;">
                 You're starting at <strong style="color:#8B949E;">500 ELO (Agent)</strong> — work your way up to Phantom.<br>
-                © ${new Date().getUTCFullYear()} OSINT Arena ·
-                <a href="https://osintarena.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
+                © ${new Date().getUTCFullYear()} PwnGrid ·
+                <a href="https://pwngrid.com/unsubscribe" style="color:#484F58;">Unsubscribe</a>
               </p>
             </td>
           </tr>
@@ -323,7 +323,7 @@ function welcomeTemplate({ username }) {
 async function sendWelcomeEmail({ email, username }) {
   await sendEmail({
     to:      email,
-    subject: `Welcome to OSINT Arena, ${username}`,
+    subject: `Welcome to PwnGrid, ${username}`,
     html:    welcomeTemplate({ username }),
   });
 }

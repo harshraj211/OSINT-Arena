@@ -86,7 +86,7 @@ export default function Pricing() {
         key: RAZORPAY_KEY,
         amount: plan.price * 100, // paise
         currency: "INR",
-        name: "OSINT Arena",
+        name: "PwnGrid",
         description: `Pro Plan — ${plan.label}`,
         // order_id: order.id,  // Uncomment when backend order creation is ready
         prefill: {
@@ -146,7 +146,7 @@ export default function Pricing() {
             <div className="pricing-pro-icon">✦</div>
             <h1 className="pricing-already-title">You're on Pro</h1>
             <p className="pricing-already-sub">
-              You have full access to all OSINT Arena features.
+              You have full access to all PwnGrid features.
             </p>
             <Link to="/dashboard" className="pricing-back-btn">
               Back to Dashboard →

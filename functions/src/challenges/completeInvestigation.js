@@ -2,7 +2,7 @@
  * submitAnswer.js
  * Cloud Function — HTTPS Callable
  *
- * The most critical function in OSINT Arena.
+ * The most critical function in PwnGrid.
  * Handles the full solve pipeline:
  *   1. Auth + input validation
  *   2. Fetch activeSession → calculate timeTaken (server-side)

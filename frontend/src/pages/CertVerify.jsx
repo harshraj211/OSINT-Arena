@@ -70,7 +70,7 @@ export default function CertVerify() {
       <header className="cv-header">
         <Link to="/" className="cv-logo">
           <span className="cv-logo-bracket">[</span>
-          <span className="cv-logo-text">OSINT ARENA</span>
+          <span className="cv-logo-text">PWNGRID</span>
           <span className="cv-logo-bracket">]</span>
         </Link>
         <span className="cv-header-label">Certificate Verification</span>
@@ -97,8 +97,8 @@ export default function CertVerify() {
             <p className="cv-status-note">
               This certificate may have been revoked or the ID is incorrect.
               If you believe this is an error, contact{" "}
-              <a href="mailto:support@osintarena.com" className="cv-link">
-                support@osintarena.com
+              <a href="mailto:support@pwngrid.com" className="cv-link">
+                support@pwngrid.com
               </a>.
             </p>
           </div>
@@ -143,7 +143,7 @@ export default function CertVerify() {
                 </h2>
 
                 <p className="cv-cert-body-text">
-                  by completing all {cert.tier} challenges on the OSINT Arena platform.
+                  by completing all {cert.tier} challenges on the PwnGrid platform.
                 </p>
               </div>
             </div>
@@ -199,8 +199,8 @@ export default function CertVerify() {
 
       <footer className="cv-footer">
         <p>
-          © {new Date().getFullYear()} OSINT Arena ·{" "}
-          <a href="https://osintarena.com" className="cv-link">osintarena.com</a>
+          © {new Date().getFullYear()} PwnGrid ·{" "}
+          <a href="https://pwngrid.com" className="cv-link">pwngrid.com</a>
         </p>
       </footer>
     </div>

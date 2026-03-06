@@ -107,7 +107,7 @@ export default function VerifyEmail() {
         {/* Logo */}
         <div className="auth-logo">
           <span className="auth-logo-bracket">[</span>
-          <span className="auth-logo-text">OSINT ARENA</span>
+          <span className="auth-logo-text">PWNGRID</span>
           <span className="auth-logo-bracket">]</span>
         </div>
 

@@ -53,7 +53,7 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-brand">[ OSINT ARENA ]</div>
+        <div className="auth-brand">[ PWNGRID ]</div>
         <h1 className="auth-title">Sign in</h1>
         <p className="auth-sub">Welcome back, agent.</p>
 

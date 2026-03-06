@@ -1,6 +1,6 @@
 {
-  "name": "osint-arena-functions",
-  "description": "Firebase Cloud Functions for OSINT Arena",
+  "name": "pwngrid-functions",
+  "description": "Firebase Cloud Functions for PwnGrid",
   "scripts": {
     "lint": "eslint .",
     "test": "jest --testPathPattern=src/lib/lib.test.js --forceExit",

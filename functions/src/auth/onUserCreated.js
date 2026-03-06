@@ -157,7 +157,7 @@ module.exports = functions.auth.user().onCreate(async (user) => {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Sanitises an arbitrary string into a valid OSINT Arena username.
+ * Sanitises an arbitrary string into a valid PwnGrid username.
  * Rules: alphanumeric + underscores, 3–20 chars, no leading/trailing underscores.
  */
 function sanitizeUsername(raw) {

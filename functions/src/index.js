@@ -1,6 +1,6 @@
 /**
  * index.js
- * Central entry point — wires every Cloud Function for OSINT Arena.
+ * Central entry point — wires every Cloud Function for PwnGrid.
  *
  * Mix of v1 and v2 Firebase Functions SDKs:
  *  - Older challenge/admin/email/leaderboard functions: v1 (module.exports style)

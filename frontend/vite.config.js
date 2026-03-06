@@ -1,6 +1,6 @@
 /**
  * vite.config.js
- * Vite configuration for OSINT Arena frontend.
+ * Vite configuration for PwnGrid frontend.
  *
  * Key features:
  *  - React plugin with fast refresh

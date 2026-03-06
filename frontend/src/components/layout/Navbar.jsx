@@ -125,8 +125,8 @@ export default function Navbar() {
             </svg>
           </div>
           <div className="navbar-logo-text-group">
-            <span className="navbar-logo-main">OSINT</span>
-            <span className="navbar-logo-sub">ARENA</span>
+            <span className="navbar-logo-main">PWN</span>
+            <span className="navbar-logo-sub">GRID</span>
           </div>
         </Link>
 

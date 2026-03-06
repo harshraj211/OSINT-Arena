@@ -1,6 +1,6 @@
 /**
  * main.jsx
- * Vite entry point for OSINT Arena frontend.
+ * Vite entry point for PwnGrid frontend.
  *
  * Import order matters:
  *  1. theme.css  — CSS variables (must be first)
