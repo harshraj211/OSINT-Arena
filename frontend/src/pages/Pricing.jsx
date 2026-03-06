@@ -27,19 +27,19 @@ const PLANS = {
 
 const FREE_FEATURES = [
   "All easy challenges",
-  "30% of medium challenges",
+  "All medium challenges",
   "1 free hard challenge per week",
+  "All weekly & monthly contests",
   "Global ELO ranking + heatmap",
   "Public profile page",
 ];
 
 const PRO_FEATURES = [
-  "All medium challenges",
-  "All hard challenges",
-  "Weekly & monthly contests",
+  "All hard challenges (unlimited)",
   "OSINT certifications",
   "Advanced analytics",
   "2 streak freezes per month",
+  "Priority support",
   "Everything in Free",
 ];
 
@@ -174,7 +174,7 @@ export default function Pricing() {
             <span className="pricing-title-accent">intelligence</span>
           </h1>
           <p className="pricing-subtitle">
-            Unlimited challenges, weekly contests, and certifications.
+            Unlimited hard challenges, certifications, and advanced analytics.
           </p>
         </div>
 

@@ -22,6 +22,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { FieldValue } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
+const { sendNotification } = require("../lib/sendNotification");
 
 if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
@@ -68,7 +69,13 @@ module.exports = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("failed-precondition", "This flag has already been resolved.");
   }
 
-  const targetUserId = flag.userId;
+  // Support both flag schemas: new (reportedUserId) and legacy (userId)
+  const targetUserId = flag.reportedUserId || flag.userId;
+
+  if (!targetUserId) {
+    throw new functions.https.HttpsError("failed-precondition", "Flag document is missing a target user ID.");
+  }
+
   const userRef = db.collection("users").doc(targetUserId);
   const userSnap = await userRef.get();
 
@@ -145,6 +152,28 @@ module.exports = functions.https.onCall(async (data, context) => {
       // Non-fatal — Firestore ban is already applied
       console.error(`resolveFlag: could not disable auth for ${targetUserId}`, err.message);
     }
+  }
+
+  // ── 6. Notify the target user ────────────────────────────────────────────
+  try {
+    if (action === "warn") {
+      await sendNotification(targetUserId, {
+        type:  "flag_warning",
+        title: "You've received a warning",
+        body:  notes.trim() || flag.reason || "A moderator reviewed your account activity and issued a warning.",
+        link:  "/dashboard",
+      });
+    } else if (action === "ban") {
+      await sendNotification(targetUserId, {
+        type:  "flag_warning",
+        title: "Your account has been suspended",
+        body:  notes.trim() || flag.reason || "Your account has been suspended due to a policy violation.",
+        link:  "/dashboard",
+      });
+    }
+  } catch (notifErr) {
+    // Non-fatal — action already committed
+    console.error("resolveFlag: failed to send user notification", notifErr.message);
   }
 
   console.log(`resolveFlag: flag ${flagId} resolved with action "${action}" by ${context.auth.uid}`);

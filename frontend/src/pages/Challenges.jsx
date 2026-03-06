@@ -216,9 +216,9 @@ export default function Challenges() {
               {solvedLoading ? "..." : `${totalSolved} solved`}
               {!isPro && (
                 <span className="challenges-limit-note">
-                  {" · Easy + 30% medium free · "}
+                  {" · Hard challenges require Pro · "}
                   <Link to="/pricing" className="challenges-upgrade-link">
-                    Unlock all →
+                    Upgrade →
                   </Link>
                 </span>
               )}
