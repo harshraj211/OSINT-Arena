@@ -1,184 +1,168 @@
-🌐 PWNGRID
 <div align="center">
-<img alt="Project Status" src="https://img.shields.io/badge/Status-Active-success.svg">
-<img alt="Frontend" src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue.svg">
-<img alt="Backend" src="https://img.shields.io/badge/Backend-Firebase%20Functions-orange.svg">
-<img alt="License" src="https://img.shields.io/badge/License-Proprietary-red.svg">
+
+<br/>
+```
+<br/>
+```
+██████╗ ██╗    ██╗███╗   ██╗ ██████╗ ██████╗ ██╗██████╗ 
+██╔══██╗██║    ██║████╗  ██║██╔════╝ ██╔══██╗██║██╔══██╗
+██████╔╝██║ █╗ ██║██╔██╗ ██║██║  ███╗██████╔╝██║██║  ██║
+██╔═══╝ ██║███╗██║██║╚██╗██║██║   ██║██╔══██╗██║██║  ██║
+██║     ╚███╔███╔╝██║ ╚████║╚██████╔╝██║  ██║██║██████╔╝
+╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝ 
+```
+
+**The competitive cybersecurity training platform for professionals.**
+
+<br/>
+
+[![Status](https://img.shields.io/badge/Status-Active-00ff88?style=for-the-badge)](https://github.com/harshraj211/pwngrid)
+[![Frontend](https://img.shields.io/badge/React_+_Vite-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://vitejs.dev)
+[![Backend](https://img.shields.io/badge/Firebase_Functions-Backend-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License](https://img.shields.io/badge/License-Proprietary-FF4444?style=for-the-badge)](./LICENSE)
+
 </div>
 
-<br />
+---
 
-📖 Overview
-PWNGRID is a highly scalable, full-stack cybersecurity training and Capture The Flag (CTF) platform. Designed for both enthusiasts and professionals, it provides a competitive environment for solving security challenges, participating in timed contests, and tracking progression through a dynamic Elo-based ranking system.
+## Overview
 
-Built heavily on serverless architecture using Firebase, the platform offers seamless real-time interactions, automated anti-cheat mechanisms, and secure code/answer execution.
+**PWNGRID** is a highly scalable, full-stack cybersecurity training and Capture The Flag (CTF) platform built for both enthusiasts and seasoned professionals. It delivers a competitive, real-time environment for solving security challenges, participating in timed contests, and tracking progression through a dynamic Elo-based ranking system.
 
-✨ Key Features
-Interactive CTF Environment: Support for traditional jeopardy-style challenges, writeups, and complex investigation boards.
+Architected entirely on Firebase's serverless infrastructure, the platform provides seamless real-time interactions, automated anti-cheat enforcement, and secure challenge execution at scale.
 
-Live Contests: Timed, real-time competitive events with dynamic race charts and automated leaderboard generation.
+---
 
-Competitive Elo & Progression System: Features an advanced Elo rating engine, streak counters, global rank badges, and automated weekly/monthly Elo resets.
+## Key Features
 
-Automated Anti-Cheat: Built-in backend heuristics (antiCheat.js) to flag suspicious activity, rapid submissions, or answer sharing.
+| Feature | Description |
+|---|---|
+| 🚩 **Interactive CTF Environment** | Jeopardy-style challenges, writeups, and complex investigation boards |
+| ⚡ **Live Contests** | Timed competitive events with real-time race charts and auto-generated leaderboards |
+| 📊 **Elo Progression System** | Advanced Elo rating engine with streak counters, rank badges, and automated weekly/monthly resets |
+| 🛡️ **Automated Anti-Cheat** | Backend heuristics to detect suspicious activity, rapid submissions, and answer sharing |
+| 🔧 **Admin Workspace** | Secure portal for managing challenges, flagged accounts, email broadcasts, and manual Elo adjustments |
+| 💳 **Payments & Certifications** | Razorpay-powered Pro subscriptions with automated certification verification |
+| ☁️ **Serverless Architecture** | Entirely Firebase Cloud Functions with strict Firestore security rules |
 
-Robust Admin Workspace: A secure admin portal for managing challenges, monitoring flagged accounts, broadcasting emails, and adjusting player Elo manually.
+---
 
-Seamless Payments & Certifications: Razorpay integration for Pro subscriptions alongside automated certification verification.
+## Tech Stack
 
-Serverless Backend: Entirely powered by Firebase Cloud Functions with strict Firestore security rules (firestore.rules).
+### Frontend
+- **Framework:** React.js + Vite
+- **Routing:** React Router with Auth, Pro, and Mod/Admin guards
+- **Styling:** CSS3, CSS Modules with custom theming (`theme.css`)
+- **Media:** Cloudinary integration for optimized asset delivery
 
-🛠 Tech Stack & Architecture
-Frontend
-Core: React.js, Vite
+### Backend & Infrastructure
+- **Compute:** Firebase Cloud Functions (Node.js 18+)
+- **Database:** Cloud Firestore (NoSQL)
+- **Auth:** Firebase Authentication — Email/Password with Custom Claims for role management
+- **Storage:** Firebase Cloud Storage with secure proxy downloads and file validation
+- **CI/CD:** GitHub Actions — automated deployment pipelines for Hosting and Functions
 
-Routing: React Router (with Auth, Pro, and Mod/Admin guards)
+### Integrations
+- **Payments:** Razorpay Webhooks
+- **Email:** SendGrid API
 
-Styling: CSS3, CSS Modules (Custom theming with theme.css)
+---
 
-Assets: Cloudinary Integration for optimized media delivery
-
-Backend & Infrastructure
-Compute: Firebase Cloud Functions (Node.js 18+)
-
-Database: Cloud Firestore (NoSQL)
-
-Authentication: Firebase Auth (Email/Password, Custom Claims for Roles)
-
-Storage: Firebase Cloud Storage (Proxy downloads and secure file validation)
-
-CI/CD: GitHub Actions (Automated deployments for Hosting and Functions)
-
-Integrations
-Payments: Razorpay Webhooks
-
-Emails: SendGrid API
-
-📂 Project Structure
-The repository is structured as a monorepo separating the client application and serverless infrastructure.
-
-Plaintext
+## Project Structure
+```
 pwngrid/
-├── .github/workflows/      # CI/CD pipelines for Firebase Hosting & Functions
-├── frontend/               # React Vite Application
-│   ├── public/             # Static assets
-│   ├── src/
-│   │   ├── components/     # Reusable UI components (Admin, Challenges, Heatmaps)
-│   │   ├── context/        # React Context (Auth, Theme)
-│   │   ├── hooks/          # Custom React hooks (useAuth, useLeaderboard)
-│   │   ├── pages/          # Application views (Dashboard, ContestSolve, Profile)
-│   │   ├── services/       # API abstraction layer calling Firebase Functions
-│   │   ├── styles/         # Global stylesheets and scanline themes
-│   │   └── utils/          # Helpers (hashing, date formatting, elo colors)
-│   └── vite.config.js      # Vite build configuration
-├── functions/              # Firebase Cloud Functions (Backend)
-│   ├── src/
-│   │   ├── admin/          # Admin-only restricted functions
-│   │   ├── auth/           # User creation hooks and custom claims setting
-│   │   ├── challenges/     # Challenge verification and unlocks
-│   │   ├── contests/       # Registration and real-time contest logic
-│   │   ├── emails/         # SendGrid automated broadcasting
-│   │   ├── leaderboard/    # Cron jobs for resetting Elo metrics
-│   │   ├── lib/            # Shared backend utilities (antiCheat, Hash, Elo)
-│   │   ├── payments/       # Razorpay webhook handlers
-│   │   └── storage/        # Secure proxy downloads
-│   └── package.json        # Cloud functions dependencies
-├── firebase.json           # Firebase CLI deployment configuration
-├── firestore.rules         # Security rules for database access
-├── storage.rules           # Security rules for cloud storage
-└── seed.js                 # Database seeding script
-🚀 Getting Started
+├── .github/workflows/          # CI/CD — Firebase Hosting & Functions pipelines
+├── frontend/                   # React + Vite client application
+│   ├── public/                 # Static assets
+│   └── src/
+│       ├── components/         # Reusable UI (Admin, Challenges, Heatmaps)
+│       ├── context/            # React Context (Auth, Theme)
+│       ├── hooks/              # Custom hooks (useAuth, useLeaderboard)
+│       ├── pages/              # Application views (Dashboard, ContestSolve, Profile)
+│       ├── services/           # API abstraction layer → Firebase Functions
+│       ├── styles/             # Global stylesheets and scanline themes
+│       └── utils/              # Helpers (hashing, date formatting, Elo colors)
+├── functions/                  # Firebase Cloud Functions (serverless backend)
+│   └── src/
+│       ├── admin/              # Admin-restricted functions
+│       ├── auth/               # User creation hooks and custom claims
+│       ├── challenges/         # Challenge verification and unlocks
+│       ├── contests/           # Registration and real-time contest logic
+│       ├── emails/             # SendGrid broadcast automation
+│       ├── leaderboard/        # Cron jobs for Elo metric resets
+│       ├── lib/                # Shared utilities (antiCheat, Hash, Elo)
+│       ├── payments/           # Razorpay webhook handlers
+│       └── storage/            # Secure proxy downloads
+├── firebase.json               # Firebase CLI deployment configuration
+├── firestore.rules             # Firestore database security rules
+├── storage.rules               # Cloud Storage security rules
+└── seed.js                     # Database seeding script
+
+Getting Started
 Prerequisites
-Node.js: v18.0.0 or higher
 
-Firebase CLI: Installed globally (npm install -g firebase-tools)
+Node.js v18.0.0+
+Firebase CLI — npm install -g firebase-tools
+Package Manager — npm or yarn
 
-Package Manager: npm or yarn
-
-1. Clone the repository
-Bash
-git clone https://github.com/harshraj211/pwngrid.git
-cd pwngrid
-2. Setup Firebase Environment
-Ensure you are logged into Firebase and have access to the target project.
-
-Bash
-firebase login
-firebase use <your-project-id>
+1. Clone the Repository
+   git clone https://github.com/harshraj211/pwngrid.git
+   cd pwngrid
+2. Configure Firebase
+   firebase login
+   firebase use <your-project-id>
 3. Frontend Setup
-Bash
-cd frontend
-npm install
+   cd frontend
+   npm install
 
-# Copy environment variables and fill in your Firebase/API keys
-cp .env.example .env
+   # Configure environment variables
+   cp .env.example .env
+   # → Fill in your Firebase and API keys in .env
 
-# Start the development server
-npm run dev
-4. Backend (Functions) Setup
-Bash
-cd ../functions
-npm install
+   npm run dev
+4. Backend Setup
+   cd ../functions
+   npm install
 
-# (Optional) Run functions locally using Firebase emulators
-npm run serve
-🔐 Environment Variables
-You will need to configure the following environment variables.
+   # Run functions locally with Firebase emulators
+   npm run serve
+Environment Variables
+Frontend — frontend/.env
 
-Frontend (frontend/.env):
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
 
-VITE_FIREBASE_API_KEY
+Backend — Firebase Secrets
+Secrets are stored securely via the Firebase CLI and never committed to source control.
+firebase functions:secrets:set SENDGRID_API_KEY
+firebase functions:secrets:set RAZORPAY_KEY_SECRET
+VITE_CLOUDINARY_URL=
 
-VITE_FIREBASE_AUTH_DOMAIN
+Deployment
+PWNGRID uses GitHub Actions for fully automated CI/CD.
+TriggerWorkflowTargetPush to maindeploy-hosting.ymlFirebase Hosting (Frontend)Push to maindeploy-functions.ymlFirebase Cloud Functions
 
-VITE_FIREBASE_PROJECT_ID
-
-VITE_FIREBASE_STORAGE_BUCKET
-
-VITE_FIREBASE_MESSAGING_SENDER_ID
-
-VITE_FIREBASE_APP_ID
-
-VITE_CLOUDINARY_URL
-
-Backend (Firebase Secrets):
-
-SENDGRID_API_KEY
-
-RAZORPAY_KEY_SECRET
-
-(Use firebase functions:secrets:set <SECRET_NAME> to store backend variables securely).
-
-🚢 Deployment
-The project leverages GitHub Actions for CI/CD.
-
-Pushing to the main branch automatically triggers .github/workflows/deploy-hosting.yml for the frontend.
-
-Changes to the backend trigger .github/workflows/deploy-functions.yml.
-
-To deploy manually via the Firebase CLI:
-
-Bash
-# Deploy database rules, indexes, and storage rules
+Manual deployment via Firebase CLI:
+# Deploy Firestore rules, indexes, and Storage rules
 firebase deploy --only firestore,storage
 
 # Deploy Cloud Functions
 firebase deploy --only functions
 
-# Deploy React Frontend
-cd frontend
-npm run build
+# Build and deploy the React frontend
+cd frontend && npm run build
 firebase deploy --only hosting
-🤝 Contributing
-Create a Feature Branch (git checkout -b feature/AmazingFeature)
 
-Commit your Changes (git commit -m 'Add some AmazingFeature')
 
-Push to the Branch (git push origin feature/AmazingFeature)
+License
+This repository and all its contents are proprietary and confidential. Unauthorized copying, distribution, or use of this software, in whole or in part, is strictly prohibited without explicit written permission from the author.
+© 2026 PWNGRID. All rights reserved.
 
-Open a Pull Request
-
-Please ensure your code passes ESLint checks (npm run lint) before submitting a PR.
-
-📄 License
-This repository is proprietary. Unauthorized copying of this file, via any medium is strictly prohibited. Proprietary and confidential.
+<div align="center">
+  <sub>Built with precision. Designed for the elite.</sub>
+</div>
+````
