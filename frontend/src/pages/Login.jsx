@@ -44,12 +44,16 @@ export default function Login() {
     setError("");
     setGSubmitting(true);
     try {
-      await loginWithGoogle(); // triggers redirect — page navigates away
+      await loginWithGoogle();
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(getFriendlyError(err.code));
+      if (err.code !== "auth/popup-closed-by-user" &&
+          err.code !== "auth/cancelled-popup-request") {
+        setError(getFriendlyError(err.code));
+      }
+    } finally {
       setGSubmitting(false);
     }
-    // setGSubmitting(false) intentionally skipped — page will redirect away
   }
 
   return (

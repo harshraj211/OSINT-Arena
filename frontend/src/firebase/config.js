@@ -65,6 +65,8 @@ export const db = getFirestore(app);
 // ── Cloud Functions ───────────────────────────────────────────────────────────
 const region = import.meta.env.VITE_FIREBASE_REGION || "us-central1";
 export const functions = getFunctions(app, region);
+// Diagnostic: log runtime environment so we can confirm which functions endpoint is used
+console.info(`[firebase/config] functions region=${region} VITE_USE_EMULATOR=${import.meta.env.VITE_USE_EMULATOR} VITE_USE_FUNCTION_EMULATOR=${import.meta.env.VITE_USE_FUNCTION_EMULATOR}`);
 export const storage = getStorage(app);
 
 // ── Emulator suite ────────────────────────────────────────────────────────────

@@ -17,8 +17,7 @@ import {
   sendEmailVerification,
   reload,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   updateProfile,
 } from "firebase/auth";
 import {
@@ -44,18 +43,23 @@ googleProvider.setCustomParameters({ prompt: "select_account" });
 // ── Ensure username is unique across all users ───────────────────────────────
 async function getUniqueUsername(baseUsername) {
   const base = sanitizeUsername(baseUsername);
-  // Check if base is available
-  const q = query(collection(db, "users"), where("username", "==", base), limit(1));
-  const snap = await getDocs(q);
-  if (snap.empty) return base;
-  // Append numbers until unique
-  for (let i = 2; i <= 9999; i++) {
-    const candidate = `${base}_${i}`.slice(0, 20);
-    const q2 = query(collection(db, "users"), where("username", "==", candidate), limit(1));
-    const s2 = await getDocs(q2);
-    if (s2.empty) return candidate;
+  // Query publicProfiles (publicly readable) instead of users (owner-only read)
+  try {
+    const q = query(collection(db, "publicProfiles"), where("username", "==", base), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return base;
+    // Append numbers until unique
+    for (let i = 2; i <= 20; i++) {
+      const candidate = `${base}_${i}`.slice(0, 20);
+      const q2 = query(collection(db, "publicProfiles"), where("username", "==", candidate), limit(1));
+      const s2 = await getDocs(q2);
+      if (s2.empty) return candidate;
+    }
+  } catch (err) {
+    console.warn("getUniqueUsername: query failed, using fallback", err.code);
   }
-  return `${base}_${Date.now()}`.slice(0, 20);
+  // Fallback: append random suffix
+  return `${base}_${Date.now().toString(36).slice(-4)}`.slice(0, 20);
 }
 
 // ── Create Firestore profile if it doesn't exist ──────────────────────────────
@@ -103,25 +107,32 @@ async function ensureUserProfile(user, extraData = {}) {
     lastLoginAt:    serverTimestamp(),
   };
 
-  const publicProfile = {
-    uid:          user.uid,
-    username,
-    plan:         "free",
-    elo:          0,
-    weeklyElo:    0,
-    monthlyElo:   0,
-    totalSolved:  0,
-    currentStreak: 0,
-    maxStreak:    0,
-    badges:       [],
-    latestCert:   null,
-    createdAt:    serverTimestamp(),
-  };
+  // Write the user profile first (this is critical)
+  await setDoc(ref, profile);
 
-  await Promise.all([
-    setDoc(ref, profile),
-    setDoc(doc(db, "publicProfiles", user.uid), publicProfile),
-  ]);
+  // Public profile is best-effort from the client.
+  // Firestore rules block client writes to publicProfiles,
+  // so the onUserCreated Cloud Function handles this server-side.
+  try {
+    const publicProfile = {
+      uid:          user.uid,
+      username,
+      plan:         "free",
+      elo:          0,
+      weeklyElo:    0,
+      monthlyElo:   0,
+      totalSolved:  0,
+      currentStreak: 0,
+      maxStreak:    0,
+      badges:       [],
+      latestCert:   null,
+      createdAt:    serverTimestamp(),
+    };
+    await setDoc(doc(db, "publicProfiles", user.uid), publicProfile);
+  } catch (err) {
+    // Expected to fail due to Firestore rules — Cloud Function handles it
+    console.warn("ensureUserProfile: publicProfiles write skipped (handled by Cloud Function)", err.code);
+  }
 
   return profile;
 }
@@ -145,22 +156,7 @@ export function AuthProvider({ children }) {
   const [claimsReady, setClaimsReady]       = useState(false);
   const profileUnsubRef = useRef(null);
 
-  // Handle Google redirect result on page load
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result?.user) {
-          await ensureUserProfile(result.user);
-        }
-      })
-      .catch((err) => {
-        // ignore popup-closed or cancelled redirects
-        if (err.code !== "auth/cancelled-popup-request" &&
-            err.code !== "auth/popup-closed-by-user") {
-          console.error("getRedirectResult error:", err);
-        }
-      });
-  }, []);
+  // No redirect handler needed — using signInWithPopup instead
 
   useEffect(() => {
     const unsubAuth = onIdTokenChanged(auth, async (user) => {
@@ -196,13 +192,38 @@ export function AuthProvider({ children }) {
       if (!profileUnsubRef.current) {
         setProfileLoading(true);
         const userRef = doc(db, "users", user.uid);
+        let profileCreateAttempted = false;
         profileUnsubRef.current = onSnapshot(userRef,
-          (snap) => {
-            setUserProfile(snap.exists() ? { id: snap.id, ...snap.data() } : null);
+          async (snap) => {
+            if (snap.exists()) {
+              setUserProfile({ id: snap.id, ...snap.data() });
+              setProfileLoading(false);
+              setLoading(false);
+            } else if (!profileCreateAttempted) {
+              // Profile doesn't exist yet — create it now (handles case where
+              // Cloud Function hasn't run or the popup-based ensureUserProfile
+              // was called before onIdTokenChanged fired)
+              profileCreateAttempted = true;
+              try {
+                await ensureUserProfile(user);
+                // onSnapshot will fire again once the doc is written
+              } catch (err) {
+                console.error("Failed to auto-create profile:", err);
+                setProfileLoading(false);
+                setLoading(false);
+              }
+            } else {
+              // Already attempted creation but doc still doesn't exist
+              setUserProfile(null);
+              setProfileLoading(false);
+              setLoading(false);
+            }
+          },
+          (err) => {
+            console.error("onSnapshot error on users doc:", err);
             setProfileLoading(false);
             setLoading(false);
-          },
-          () => { setProfileLoading(false); setLoading(false); }
+          }
         );
       } else {
         setLoading(false);
@@ -221,9 +242,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loginWithGoogle = useCallback(async () => {
-    // signInWithRedirect avoids COOP/popup issues in all environments
-    await signInWithRedirect(auth, googleProvider);
-    // Navigation will happen after redirect returns — no return value needed
+    const result = await signInWithPopup(auth, googleProvider);
+    await ensureUserProfile(result.user);
+    return result;
   }, []);
 
   const register = useCallback(async (email, password, username) => {

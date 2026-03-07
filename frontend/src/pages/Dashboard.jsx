@@ -33,7 +33,7 @@ function useCountUp(target, duration = 800) {
 }
 
 export default function Dashboard() {
-  const { currentUser, userProfile, isPro } = useAuth();
+  const { currentUser, userProfile, isPro, loading: authLoading, profileLoading } = useAuth();
 
   const [recentActivity,  setRecentActivity]  = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
@@ -103,11 +103,38 @@ export default function Dashboard() {
   }
 
   if (!userProfile) {
+    // Still loading
+    if (authLoading || profileLoading) {
+      return (
+        <PageWrapper>
+          <div className="dash-loading">
+            <div className="dash-loading-spinner" />
+            <span>Loading your profile...</span>
+          </div>
+        </PageWrapper>
+      );
+    }
+    // Loading finished but no profile — show error with retry
     return (
       <PageWrapper>
         <div className="dash-loading">
-          <div className="dash-loading-spinner" />
-          <span>Loading your profile...</span>
+          <span style={{ color: "#ff6b6b", marginBottom: 12 }}>
+            Could not load your profile. This may be a temporary issue.
+          </span>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: "8px 20px",
+              background: "var(--color-accent, #00e5ff)",
+              color: "#000",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Retry
+          </button>
         </div>
       </PageWrapper>
     );

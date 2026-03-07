@@ -45,7 +45,7 @@ const DIFF_COLOR = {
 
 export default function Profile() {
   const { username: usernameParam } = useParams();
-  const { currentUser, userProfile: ownProfile } = useAuth();
+  const { currentUser, userProfile: ownProfile, loading: authLoading, profileLoading } = useAuth();
   const navigate = useNavigate();
 
   const [profile, setProfile]         = useState(null);
@@ -237,7 +237,33 @@ export default function Profile() {
     );
   }
 
-  if (loading || !profile) {
+  if (loading || (isOwnProfile && (authLoading || profileLoading)) || !profile) {
+    // If not loading anymore and still no profile, show error
+    if (!loading && !authLoading && !profileLoading && !profile && isOwnProfile) {
+      return (
+        <PageWrapper>
+          <div className="profile-loading">
+            <span style={{ color: "#ff6b6b", marginBottom: 12 }}>
+              Could not load your profile.
+            </span>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "8px 20px",
+                background: "var(--color-accent, #00e5ff)",
+                color: "#000",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </PageWrapper>
+      );
+    }
     return (
       <PageWrapper>
         <div className="profile-loading">
