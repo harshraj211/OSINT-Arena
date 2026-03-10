@@ -1,0 +1,522 @@
+			"queryScope": "COLLECTION",
+			"fields": [
+				{
+					"fieldPath": "type",
+					"order": "ASCENDING"
+				},
+				{
+					"fieldPath": "timestamp",
+					"order": "DESCENDING"
+				}
+			]
+		}
+	],
+	"fieldOverrides": []
+}
+===== firestore.rules =====
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+
+		// ── Helpers ───────────────────────────────────────────────────────────────
+		function isAuth()     { return request.auth != null; }
+		function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+
+		// Role checks support BOTH JWT custom claims and Firestore users/{uid}.role.
+		// This prevents temporary permission-denied states when a user role was updated
+		// in Firestore but token claims have not been refreshed yet.
+		function roleFromToken() {
+			return isAuth() && request.auth.token.role is string ? request.auth.token.role : null;
+		}
+		function roleFromProfile() {
+			return isAuth()
+				&& exists(/databases/$(database)/documents/users/$(request.auth.uid))
+				&& get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role is string
+				? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+				: null;
+		}
+		function hasRole(role) {
+			return roleFromToken() == role || roleFromProfile() == role;
+		}
+		function isAdmin()    { return isAuth() && hasRole('admin'); }
+		function isMod()      { return isAuth() && (hasRole('mod') || hasRole('moderator') || isAdmin()); }
+		function isContestMod() { return isAuth() && (hasRole('contest_mod') || isMod()); }
+		function isVerified() { return isAuth() && request.auth.token.email_verified == true; }
+		function hasOnly(fields) { return request.resource.data.keys().hasOnly(fields); }
+
+		// SECURITY: Strict type + length validation for user-editable profile fields.
+		// Prevents DB bloat (10MB bio attack), frontend crashes (object-as-string),
+		// and stored XSS via oversized payloads.
+		function isValidProfileUpdate() {
+			let d = request.resource.data;
+			return (!d.keys().hasAny(['username'])    || (d.username is string    && d.username.size()    > 2  && d.username.size()    < 31))
+					&& (!d.keys().hasAny(['displayName']) || (d.displayName is string && d.displayName.size() > 0  && d.displayName.size() < 51))
+					&& (!d.keys().hasAny(['bio'])         || (d.bio is string         && d.bio.size()         < 501))
+					&& (!d.keys().hasAny(['photoURL'])    || (d.photoURL is string    && d.photoURL.size()    < 2049))
+					&& (!d.keys().hasAny(['presetAvatar'])|| (d.presetAvatar is string && d.presetAvatar.size() < 51))
+					&& (!d.keys().hasAny(['country'])     || (d.country is string     && d.country.size()     < 51))
+					&& (!d.keys().hasAny(['university'])  || (d.university is string  && d.university.size()  < 101))
+					&& (!d.keys().hasAny(['website'])     || (d.website is string     && d.website.size()     < 201))
+					&& (!d.keys().hasAny(['gender'])      || (d.gender is string      && d.gender.size()      < 21));
+		}
+
+		// ── Users ─────────────────────────────────────────────────────────────────
+		match /users/{userId} {
+			allow read:   if isOwner(userId) || isAdmin();
+
+			// SECURITY: Enforce safe defaults on creation.
+			// An attacker bypassing the frontend could POST { role: "admin", plan: "pro", elo: 999999 }
+			// directly to Firestore. These checks ensure all sensitive fields are locked
+			// to their safe initial values. Profile creation is ALSO handled by the
+			// onUserCreated Cloud Function trigger — this is a defense-in-depth rule.
+			allow create: if isOwner(userId)
+											 && request.resource.data.role    == 'user'
+											 && request.resource.data.plan    == 'free'
+											 && request.resource.data.elo     == 0
+											 && request.resource.data.weeklyElo  == 0
+											 && request.resource.data.monthlyElo == 0
+											 && request.resource.data.isBanned   == false
+											 && request.resource.data.isFlagged  == false
+											 && request.resource.data.totalSolved == 0
+											 && request.resource.data.correctSubmissions == 0
+											 && request.resource.data.wrongSubmissions   == 0;
+
+			allow update: if isOwner(userId) && isVerified()
+											 && hasOnly(['username', 'displayName', 'photoURL', 'bio',
+																	 'gender', 'country', 'university', 'website',
+																	 'presetAvatar', 'updatedAt'])
+											 && isValidProfileUpdate()
+										|| isAdmin();
+			allow delete: if false;
+		}
+
+		// ── Public Profiles ───────────────────────────────────────────────────────
+		match /publicProfiles/{userId} {
+			allow read:  if true;
+			allow write: if false;
+		}
+
+		// ── Challenges ────────────────────────────────────────────────────────────
+		match /challenges/{challengeId} {
+			allow read: if isVerified()
+										 && resource.data.isActive == true
+										 && resource.data.isDeleted == false;
+			allow read: if isVerified()
+										 && resource.data.visibility == "contest"
+										 && resource.data.isDeleted == false;
+			allow read: if isMod();
+			allow read: if isContestMod();
+			allow create: if (isMod() || isContestMod()) && isVerified()
+				&& request.resource.data.keys().hasAll(['title','description','difficulty','createdBy'])
+				&& request.resource.data.createdBy == request.auth.uid;
+			allow update: if isContestMod() && isVerified();
+			allow delete: if isContestMod() && isVerified();
+
+			match /secrets/{secretId} {
+				allow read:  if false;
+				allow write: if false;
+			}
+		}
+
+		// ── Submissions ───────────────────────────────────────────────────────────
+		match /submissions/{submissionId} {
+			allow read:   if isAuth() && resource.data.userId == request.auth.uid;
+			allow read:   if isMod();
+			allow create: if false;
+			allow update: if false;
+			allow delete: if isAdmin();
+		}
+
+		// ── Active Sessions ───────────────────────────────────────────────────────
+		match /activeSessions/{sessionId} {
+			allow read:  if isAuth() && sessionId.matches(request.auth.uid + '_.*');
+			allow write: if false;
+		}
+
+		// ── Heatmap ───────────────────────────────────────────────────────────────
+		match /heatmap/{userId}/years/{year} {
+			allow read:  if isOwner(userId) || isAuth();
+			allow write: if false;
+		}
+
+		// ── Leaderboard ───────────────────────────────────────────────────────────
+		match /leaderboard/{entry} {
+			allow read:  if true;
+			allow write: if false;
+		}
+
+		// ── Contests ──────────────────────────────────────────────────────────────
+		match /contests/{contestId} {
+			allow read:  if isAuth();
+			allow write: if isContestMod();
+			match /participants/{userId} {
+				allow read:  if isAuth(); // scoreboard is public to all authenticated users
+				allow write: if false;
+				===== firestore.indexes.json =====
+				{
+				match /attempts/{challengeId} {
+					allow read:  if isOwner(userId) || isMod();
+					allow write: if false;
+				}
+			}
+			match /abuseFlags/{userId} {
+				allow read:  if isAdmin() || isMod();
+				allow write: if false;
+			}
+		}
+
+		// ── Contest Submissions ───────────────────────────────────────────────────
+		match /contestSubmissions/{submissionId} {
+			allow read:  if isAuth(); // participants need to read for race chart
+			allow write: if false;
+		}
+
+		// ── Notifications ─────────────────────────────────────────────────────────
+		match /notifications/{userId}/items/{notifId} {
+			allow read:   if isOwner(userId);
+			allow update: if isOwner(userId) && hasOnly(['read']);
+			allow create: if false; // server-side only
+			allow delete: if isOwner(userId) || isAdmin();
+		}
+
+		// ── Flags ─────────────────────────────────────────────────────────────────
+		match /flags/{flagId} {
+			allow read:   if isMod();
+			allow create: if false;
+			allow update: if isMod() && hasOnly(['reviewedBy','resolvedAt','notes','status']);
+			allow delete: if isAdmin();
+		}
+
+		// ── Certifications ────────────────────────────────────────────────────────
+		match /certifications/{certId} {
+			allow read:  if true;
+			allow write: if false;
+		}
+
+		// ── Payments ──────────────────────────────────────────────────────────────
+		match /payments/{paymentId} {
+			allow read:  if isAuth() && resource.data.uid == request.auth.uid;
+			allow read:  if isAdmin();
+			allow write: if false;
+		}
+
+		match /paymentFailures/{failureId} {
+			allow read:  if isAdmin();
+			allow write: if false;
+		}
+
+		// ── Config ────────────────────────────────────────────────────────────────
+		match /config/{docId} {
+			allow read:  if isAuth();
+			allow write: if isAdmin();
+		}
+
+		// ── Admin Logs ────────────────────────────────────────────────────────────
+		match /adminLogs/{logId} {
+			allow read:  if isAdmin();
+			allow write: if false;
+		}
+
+		// ── Follows ───────────────────────────────────────────────────────────────
+		match /follows/{followId} {
+			allow read: if isAuth();
+			allow create: if isAuth() && isVerified()
+				&& request.resource.data.followerId == request.auth.uid
+				&& followId == request.auth.uid + "_" + request.resource.data.followingId;
+			allow delete: if isAuth()
+				&& resource.data.followerId == request.auth.uid;
+		}
+
+		// ── Badges ────────────────────────────────────────────────────────────────
+		match /badges/{badgeId} {
+			allow read:  if isAuth();
+			allow write: if false;
+		}
+
+		// ── Writeups ─────────────────────────────────────────────────────────────
+		// Validate content size to prevent DB bloat attacks
+		match /writeups/{writeupId} {
+			allow read:  if resource.data.isPublic == true || isOwner(resource.data.userId) || isMod();
+			allow create: if isAuth() && isVerified()
+				&& request.resource.data.userId == request.auth.uid
+				&& request.resource.data.content is string
+				&& request.resource.data.content.size() < 50001   // 50KB max writeup
+				&& request.resource.data.title is string
+				&& request.resource.data.title.size() < 201;
+			allow update: if isOwner(resource.data.userId)
+				&& request.resource.data.content is string
+				&& request.resource.data.content.size() < 50001
+				&& request.resource.data.title is string
+				&& request.resource.data.title.size() < 201;
+			allow delete: if isOwner(resource.data.userId) || isAdmin();
+		}
+
+		// ── Deny everything else ──────────────────────────────────────────────────
+		match /{document=**} {
+			allow read, write: if false;
+		}
+	}
+}
+===== firebase.json =====
+{
+	"firestore": {
+		"rules": "firestore.rules",
+		"indexes": "firestore.indexes.json"
+	},
+	"functions": [
+		{
+			"source": "functions",
+			"codebase": "default",
+			"ignore": [
+				"node_modules",
+				".git",
+				"firebase-debug.log",
+				"firebase-debug.*.log",
+				"*.local",
+				"src/lib/lib.test.js"
+			],
+			"predeploy": [
+				"npm --prefix \"$RESOURCE_DIR\" run lint"
+			]
+		}
+	],
+	"hosting": {
+		"public": "frontend/dist",
+		"ignore": [
+			"firebase.json",
+			"**/.*",
+			"**/node_modules/**"
+		],
+		"rewrites": [
+			{
+				"source": "**",
+				"destination": "/index.html"
+			}
+		],
+		"headers": [
+			{
+				"source": "/assets/**",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "public, max-age=31536000, immutable"
+					}
+				]
+			},
+			{
+				"source": "**/*.@(js|css)",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "public, max-age=31536000, immutable"
+					}
+				]
+			},
+			{
+				"source": "**",
+				"headers": [
+					{
+						"key": "X-Content-Type-Options",
+						"value": "nosniff"
+					},
+					{
+						"key": "X-Frame-Options",
+						"value": "DENY"
+					},
+					{
+						"key": "X-XSS-Protection",
+						"value": "1; mode=block"
+					},
+					{
+						"key": "Referrer-Policy",
+						"value": "strict-origin-when-cross-origin"
+					},
+					{
+						"key": "Permissions-Policy",
+						"value": "camera=(), microphone=(), geolocation=()"
+					}
+				]
+			}
+		],
+		"predeploy": [
+			"npm --prefix frontend run build"
+		]
+	},
+	"emulators": {
+		"auth": {
+			"port": 9099
+		},
+		"firestore": {
+			"port": 8080
+		},
+		"functions": {
+			"port": 5001
+		},
+		"hosting": {
+			"port": 5000
+		},
+		"ui": {
+			"enabled": true,
+			"port": 4040
+		},
+		"singleProjectMode": true
+	},
+	"storage": {
+		"rules": "storage.rules"
+	}
+}
+===== README.md =====
+===== README.md =====
+<div align="center">
+
+<h1>⚡ PWNGRID</h1>
+
+[![Status](https://img.shields.io/badge/Status-Active-00ff88?style=for-the-badge)](https://github.com/harshraj211/pwngrid)
+[![Frontend](https://img.shields.io/badge/React_+_Vite-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://vitejs.dev)
+[![Backend](https://img.shields.io/badge/Firebase_Functions-Backend-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License](https://img.shields.io/badge/License-Proprietary-FF4444?style=for-the-badge)](./LICENSE)
+
+</div>
+
+---
+
+## Overview
+
+**PWNGRID** is a highly scalable, full-stack cybersecurity training and Capture The Flag (CTF) platform built for both enthusiasts and seasoned professionals. It delivers a competitive, real-time environment for solving security challenges, participating in timed contests, and tracking progression through a dynamic Elo-based ranking system.
+
+Architected entirely on Firebase's serverless infrastructure, the platform provides seamless real-time interactions, automated anti-cheat enforcement, and secure challenge execution at scale.
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| 🚩 **Interactive CTF Environment** | Jeopardy-style challenges, writeups, and complex investigation boards |
+| ⚡ **Live Contests** | Timed competitive events with real-time race charts and auto-generated leaderboards |
+| 📊 **Elo Progression System** | Advanced Elo rating engine with streak counters, rank badges, and automated weekly/monthly resets |
+| 🛡️ **Automated Anti-Cheat** | Backend heuristics to detect suspicious activity, rapid submissions, and answer sharing |
+| 🔧 **Admin Workspace** | Secure portal for managing challenges, flagged accounts, email broadcasts, and manual Elo adjustments |
+| 💳 **Payments & Certifications** | Razorpay-powered Pro subscriptions with automated certification verification |
+| ☁️ **Serverless Architecture** | Entirely Firebase Cloud Functions with strict Firestore security rules |
+
+---
+
+## Tech Stack
+
+### Frontend
+- **Framework:** React.js + Vite
+- **Routing:** React Router with Auth, Pro, and Mod/Admin guards
+- **Styling:** CSS3, CSS Modules with custom theming (`theme.css`)
+- **Media:** Cloudinary integration for optimized asset delivery
+
+### Backend & Infrastructure
+- **Compute:** Firebase Cloud Functions (Node.js 18+)
+- **Database:** Cloud Firestore (NoSQL)
+- **Auth:** Firebase Authentication — Email/Password with Custom Claims for role management
+- **Storage:** Firebase Cloud Storage with secure proxy downloads and file validation
+- **CI/CD:** GitHub Actions — automated deployment pipelines for Hosting and Functions
+
+### Integrations
+- **Payments:** Razorpay Webhooks
+- **Email:** SendGrid API
+
+---
+
+## Project Structure
+```
+pwngrid/
+├── .github/workflows/          # CI/CD — Firebase Hosting & Functions pipelines
+├── frontend/                   # React + Vite client application
+│   ├── public/                 # Static assets
+│   └── src/
+│       ├── components/         # Reusable UI (Admin, Challenges, Heatmaps)
+│       ├── context/            # React Context (Auth, Theme)
+│       ├── hooks/              # Custom hooks (useAuth, useLeaderboard)
+│       ├── pages/              # Application views (Dashboard, ContestSolve, Profile)
+│       ├── services/           # API abstraction layer → Firebase Functions
+│       ├── styles/             # Global stylesheets and scanline themes
+│       └── utils/              # Helpers (hashing, date formatting, Elo colors)
+├── functions/                  # Firebase Cloud Functions (serverless backend)
+│   └── src/
+│       ├── admin/              # Admin-restricted functions
+│       ├── auth/               # User creation hooks and custom claims
+│       ├── challenges/         # Challenge verification and unlocks
+│       ├── contests/           # Registration and real-time contest logic
+│       ├── emails/             # SendGrid broadcast automation
+│       ├── leaderboard/        # Cron jobs for Elo metric resets
+│       ├── lib/                # Shared utilities (antiCheat, Hash, Elo)
+│       ├── payments/           # Razorpay webhook handlers
+│       └── storage/            # Secure proxy downloads
+├── firebase.json               # Firebase CLI deployment configuration
+├── firestore.rules             # Firestore database security rules
+├── storage.rules               # Cloud Storage security rules
+└── seed.js                     # Database seeding script
+
+Getting Started
+Prerequisites
+
+Node.js v18.0.0+
+Firebase CLI — npm install -g firebase-tools
+Package Manager — npm or yarn
+
+1. Clone the Repository
+	git clone https://github.com/harshraj211/pwngrid.git
+	cd pwngrid
+2. Configure Firebase
+	firebase login
+	firebase use <your-project-id>
+3. Frontend Setup
+	cd frontend
+	npm install
+
+	# Configure environment variables
+	cp .env.example .env
+	# → Fill in your Firebase and API keys in .env
+
+	npm run dev
+4. Backend Setup
+	cd ../functions
+	npm install
+
+	# Run functions locally with Firebase emulators
+	npm run serve
+Environment Variables
+Frontend — frontend/.env
+
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+
+Backend — Firebase Secrets
+Secrets are stored securely via the Firebase CLI and never committed to source control.
+firebase functions:secrets:set SENDGRID_API_KEY
+firebase functions:secrets:set RAZORPAY_KEY_SECRET
+VITE_CLOUDINARY_URL=
+
+Deployment
+PWNGRID uses GitHub Actions for fully automated CI/CD.
+TriggerWorkflowTargetPush to maindeploy-hosting.ymlFirebase Hosting (Frontend)Push to maindeploy-functions.ymlFirebase Cloud Functions
+
+Manual deployment via Firebase CLI:
+# Deploy Firestore rules, indexes, and Storage rules
+firebase deploy --only firestore,storage
+
+# Deploy Cloud Functions
+firebase deploy --only functions
+
+# Build and deploy the React frontend
+cd frontend && npm run build
+firebase deploy --only hosting
+
+
+License
+This repository and all its contents are proprietary and confidential. Unauthorized copying, distribution, or use of this software, in whole or in part, is strictly prohibited without explicit written permission from the author.
+© 2026 PWNGRID. All rights reserved.
+
+<div align="center">
+  <sub>Built with precision. Designed for the elite.</sub>
+</div>
